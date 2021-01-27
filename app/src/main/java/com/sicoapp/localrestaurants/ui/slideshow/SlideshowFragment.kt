@@ -4,38 +4,36 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.databinding.FragmentGalleryBinding
-import com.sicoapp.localrestaurants.ui.BaseFR
-import com.sicoapp.localrestaurants.ui.gallery.GalleryViewModel
+import com.sicoapp.localrestaurants.databinding.FragmentHomeBinding
+import com.sicoapp.localrestaurants.databinding.FragmentSlideshowBinding
+import com.sicoapp.localrestaurants.ui.Base
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class SlideshowFragment : BaseFR() {
+class SlideshowFragment :  Base<FragmentSlideshowBinding, BaseActivity>() {
 
     private val viewModel: SlideshowViewModel by viewModels()
-    private lateinit var binding: FragmentGalleryBinding
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding =  FragmentGalleryBinding.bind(view)
-    }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View {
-
-        val textView = binding.textGallery
-        viewModel.text.observe(viewLifecycleOwner, Observer {
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = setBinding(inflater,container)
+        val textView = binding.textSlideshow
+        viewModel.text.observe(viewLifecycleOwner, {
             textView.text = it
         })
-        return binding.root
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
+
+    override fun setBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentSlideshowBinding
+            = FragmentSlideshowBinding.inflate(inflater, container, false)
 }

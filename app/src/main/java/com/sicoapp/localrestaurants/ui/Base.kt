@@ -1,8 +1,14 @@
 package com.sicoapp.localrestaurants.ui
 
 import android.app.Dialog
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.viewbinding.ViewBinding
 import com.google.android.material.snackbar.Snackbar
 import com.sicoapp.localrestaurants.R
 import kotlinx.android.synthetic.main.dialog_progress.*
@@ -12,9 +18,31 @@ import kotlinx.android.synthetic.main.dialog_progress.*
  * @date 1/26/2021
  */
 
-open class BaseFR : Fragment() {
+abstract class Base <T : ViewBinding, A : Any> : Fragment() {
 
-    lateinit var dialog: Dialog
+    private var handler: A? = null //It's base activity
+
+    protected open var binding: T? = null
+
+    private lateinit var dialog: Dialog
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        @Suppress("UNCHECKED_CAST")
+        this.handler = this.activity as? A
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        this.binding = this.setBinding(inflater,container)
+        return binding!!.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    abstract fun setBinding(inflater: LayoutInflater, container: ViewGroup?): T
 
     open fun showProgressDialog(text: String) {
         dialog = Dialog(requireContext())
@@ -39,5 +67,4 @@ open class BaseFR : Fragment() {
     open fun hideProgressDialog() {
         dialog.dismiss()
     }
-
 }

@@ -1,6 +1,7 @@
 package com.sicoapp.localrestaurants.data.di
 
 import com.sicoapp.localrestaurants.data.local.DatabaseDao
+import com.sicoapp.localrestaurants.data.remote.RestaurantServis
 import com.sicoapp.localrestaurants.utils.BASE_URL
 import dagger.Module
 import dagger.Provides
@@ -42,6 +43,6 @@ class RetrofitModule {
 
         @Provides
         @Singleton
-        fun provideApiService(retrofit: Retrofit) = retrofit.create(DatabaseDao::class.java)
+        fun provideApiService(retrofit: Retrofit) = retrofit.create(RestaurantServis::class.java)
     }
 }
