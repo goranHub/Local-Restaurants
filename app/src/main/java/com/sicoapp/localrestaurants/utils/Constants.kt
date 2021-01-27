@@ -5,4 +5,4 @@ package com.sicoapp.localrestaurants.utils
  * @date 1/26/2021
  */
 
-    const val BASE_URL  = "http://www.mocky.io/v2"
+    const val BASE_URL  = "https://www.mocky.io/v2/"

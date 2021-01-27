@@ -10,8 +10,11 @@ import com.sicoapp.localrestaurants.databinding.FragmentHomeBinding
 import com.sicoapp.localrestaurants.ui.Base
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class HomeFragment : Base<FragmentHomeBinding, BaseActivity>() {
+
+    var classNameTag = this::class.simpleName!!
 
     private val viewModel: HomeViewModel by viewModels()
 
@@ -20,15 +23,18 @@ class HomeFragment : Base<FragmentHomeBinding, BaseActivity>() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = setBinding(inflater,container)
+        val binding = setBinding(inflater, container)
         val textView = binding.textHome
         viewModel.text.observe(viewLifecycleOwner, {
             textView.text = it
         })
+
+
+
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun setBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding
-    = FragmentHomeBinding.inflate(inflater, container, false)
+    override fun setBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding =
+        FragmentHomeBinding.inflate(inflater, container, false)
 
 }

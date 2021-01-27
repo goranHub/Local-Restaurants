@@ -1,6 +1,5 @@
 package com.sicoapp.localrestaurants.data.di
 
-import com.sicoapp.localrestaurants.data.local.DatabaseDao
 import com.sicoapp.localrestaurants.data.remote.RestaurantServis
 import com.sicoapp.localrestaurants.utils.BASE_URL
 import dagger.Module
@@ -10,7 +9,6 @@ import dagger.hilt.android.components.ApplicationComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
@@ -20,9 +18,7 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(ApplicationComponent::class)
-class RetrofitModule {
-    @InstallIn(ApplicationComponent::class)
-    object RetrofitModule {
+object RetrofitModule {
 
         @Provides
         @Singleton
@@ -37,12 +33,12 @@ class RetrofitModule {
         fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(BASE_URL)
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            //.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(okHttpClient)
             .build()
 
         @Provides
         @Singleton
-        fun provideApiService(retrofit: Retrofit) = retrofit.create(RestaurantServis::class.java)
-    }
+        fun provideApiService(retrofit: Retrofit): RestaurantServis = retrofit.create(RestaurantServis::class.java)
 }
+

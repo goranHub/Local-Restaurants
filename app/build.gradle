@@ -11,7 +11,6 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-android-extensions'
 
 
-
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -94,6 +93,7 @@ dependencies {
 
     //retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation "com.squareup.retrofit2:adapter-rxjava2:2.9.0"
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
@@ -107,11 +107,14 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
-    // Rx-Retrofit Call Adapter
-    implementation "com.squareup.retrofit2:adapter-rxjava2:2.9.0" // Retrofit call adapter
 
     //multidex
     def multidex_version = "2.0.1"
     implementation "androidx.multidex:multidex:$multidex_version"
 
+    //Timber
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    // Easy Permissions
+    implementation 'pub.devrel:easypermissions:3.0.0'
 }
