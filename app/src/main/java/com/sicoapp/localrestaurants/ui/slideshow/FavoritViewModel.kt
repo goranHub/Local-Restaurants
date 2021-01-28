@@ -9,7 +9,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 
-class SlideshowViewModel @ViewModelInject constructor(
+class FavoritViewModel @ViewModelInject constructor(
     @ApplicationContext application: Context,
     @Assisted private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -19,4 +19,20 @@ class SlideshowViewModel @ViewModelInject constructor(
         value = "This is slideshow Fragment"
     }
     val text: LiveData<String> = _text
+
+/*    private fun writeFavoritRestaurantDataToSharedPref(): Boolean {
+        val name = ""
+        val rating = 1
+        if(name.isEmpty() || rating.isEmpty()) {
+            return false
+        }
+        sharedPref.edit()
+            .putString(KEY_NAME, name)
+            .putInt(KEY_RATING, rating)
+            .apply()
+        val toolbarText = "Let's go, $name!"
+        requireActivity().actionBar.title = "toolbarText"
+        return true
+    }*/
+
 }

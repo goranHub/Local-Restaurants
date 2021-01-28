@@ -1,5 +1,6 @@
 package com.sicoapp.localrestaurants.ui.slideshow
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,12 +10,16 @@ import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.databinding.FragmentSlideshowBinding
 import com.sicoapp.localrestaurants.ui.Base
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class SlideshowFragment :  Base<FragmentSlideshowBinding, BaseActivity>() {
+class FavoritFragment :  Base<FragmentSlideshowBinding, BaseActivity>() {
 
-    private val viewModel: SlideshowViewModel by viewModels()
+    private val viewModel: FavoritViewModel by viewModels()
+
+    @Inject
+    lateinit var sharedPref: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,6 +33,9 @@ class SlideshowFragment :  Base<FragmentSlideshowBinding, BaseActivity>() {
         })
         return super.onCreateView(inflater, container, savedInstanceState)
     }
+
+
+
 
     override fun setBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentSlideshowBinding
             = FragmentSlideshowBinding.inflate(inflater, container, false)

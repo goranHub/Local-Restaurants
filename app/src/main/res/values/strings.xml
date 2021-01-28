@@ -8,6 +8,7 @@
     <string name="action_settings">Settings</string>
 
     <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_map">Restaurant Map</string>
+    <string name="menu_favorit">Favorit</string>
+    <string name="google_maps_api_key">AIzaSyDr4rWFZNz8l1zgvUFZwkJASuqCUrD9f0Y</string>
 </resources>

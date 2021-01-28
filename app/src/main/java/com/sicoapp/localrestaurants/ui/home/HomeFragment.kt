@@ -14,8 +14,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HomeFragment : Base<FragmentHomeBinding, BaseActivity>() {
 
-    var classNameTag = this::class.simpleName!!
-
     private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreateView(
