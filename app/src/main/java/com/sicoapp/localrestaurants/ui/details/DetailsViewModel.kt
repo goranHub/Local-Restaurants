@@ -21,24 +21,7 @@ class DetailsViewModel @ViewModelInject constructor(
     }
     val text: LiveData<String> = _text
 
-    init {
-        load()
-    }
 
-    private fun load() {
-        val currentCall = restaurantServis.get()
-
-        currentCall.enqueueR {
-            this.onResponse = {
-                it.body()?.map {
-                    Timber.d(it.name)
-                }
-            }
-            this.onFailure = {
-                Timber.d("onFailure")
-            }
-        }
-    }
 }
 
 

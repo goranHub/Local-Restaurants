@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.local.RestraurantModel
+import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -36,7 +37,6 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback {
         mMapFragment.getMapAsync(this)
 
         return v
-
     }
 
 
@@ -44,15 +44,18 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback {
         /**
          * Add a marker on the location using the latitude and longitude and move the camera to it.
          */
-        /*    val position = LatLng(
-                restaurantPlaces!!.latitude.toDouble(),
-                restaurantPlaces!!.longitude.toDouble()
-            )*/
-        val myPlace = LatLng(40.73, -73.99)  // this is New York
-        googleMap.addMarker(MarkerOptions().position(myPlace).title("this is New York"))
-        val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(myPlace, 15f)
-        googleMap.animateCamera(newLatLngZoom)
+
+        viewModel.showMapCallback = object : ShowMapCallback {
+            override fun onResponse(it: List<RestaurantResponse>) {
+                 it.map {
+                     val position = LatLng(it.latitude, it.longitude)
+                     val name = it.name
+                     googleMap.addMarker(MarkerOptions().position(position).title(name))
+                     val newLatLngZoom = CameraUpdateFactory.newLatLngZoom(position, 13f)
+                     googleMap.animateCamera(newLatLngZoom)
+                 }
+            }
+        }
 
     }
-
 }
