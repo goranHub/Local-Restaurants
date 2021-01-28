@@ -24,7 +24,7 @@ class MapViewModel  @ViewModelInject constructor(
 
         currentCall.enqueueR {
             this.onResponse = {
-
+                Timber.d("onResponse")
                 showMapCallback?.onResponse(it.body()!!)
 
                 it.body()?.map {
@@ -36,6 +36,4 @@ class MapViewModel  @ViewModelInject constructor(
             }
         }
     }
-
-
 }

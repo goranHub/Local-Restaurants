@@ -47,7 +47,7 @@ abstract class BaseFR <T : ViewBinding, A : Any> : Fragment() {
     open fun showProgressDialog(text: String) {
         dialog = Dialog(requireContext())
         dialog.setContentView(R.layout.dialog_progress)
-        dialog.tv_progress_text.text = text
+        dialog.tv_name.text = text
         dialog.show()
     }
 
@@ -67,4 +67,5 @@ abstract class BaseFR <T : ViewBinding, A : Any> : Fragment() {
     open fun hideProgressDialog() {
         dialog.dismiss()
     }
+
 }
