@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.ui.slideshow
+package com.sicoapp.localrestaurants.ui.favorit
 
 import android.content.Context
 import androidx.hilt.Assisted

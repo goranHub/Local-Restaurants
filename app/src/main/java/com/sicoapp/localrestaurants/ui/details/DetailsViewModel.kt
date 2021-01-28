@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.ui.home
+package com.sicoapp.localrestaurants.ui.details
 
 import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
@@ -11,7 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 
 
-class HomeViewModel @ViewModelInject constructor(
+class DetailsViewModel @ViewModelInject constructor(
     @ApplicationContext application: Context,
     private val restaurantServis: RestaurantServis
 ) : ViewModel() {
@@ -38,7 +38,6 @@ class HomeViewModel @ViewModelInject constructor(
                 Timber.d("onFailure")
             }
         }
-
     }
 }
 

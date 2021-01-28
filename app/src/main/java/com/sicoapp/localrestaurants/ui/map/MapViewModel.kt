@@ -1,10 +1,8 @@
-package com.sicoapp.localrestaurants.ui.gallery
+package com.sicoapp.localrestaurants.ui.map
 
 import android.content.Context
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

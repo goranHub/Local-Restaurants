@@ -18,7 +18,7 @@ import kotlinx.android.synthetic.main.dialog_progress.*
  * @date 1/26/2021
  */
 
-abstract class Base <T : ViewBinding, A : Any> : Fragment() {
+abstract class BaseFR <T : ViewBinding, A : Any> : Fragment() {
 
     private var handler: A? = null //It's base activity
 

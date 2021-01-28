@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.ui.slideshow
+package com.sicoapp.localrestaurants.ui.favorit
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -8,13 +8,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.databinding.FragmentSlideshowBinding
-import com.sicoapp.localrestaurants.ui.Base
+import com.sicoapp.localrestaurants.ui.BaseFR
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class FavoritFragment :  Base<FragmentSlideshowBinding, BaseActivity>() {
+class FavoritFragment :  BaseFR<FragmentSlideshowBinding, BaseActivity>() {
 
     private val viewModel: FavoritViewModel by viewModels()
 
