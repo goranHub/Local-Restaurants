@@ -10,6 +10,6 @@
     <string name="details">Details</string>
     <string name="menu_map">Restaurant Map</string>
     <string name="menu_favorit">Favorit</string>
-    <string name="google_maps_api_key">AIzaSyARobwxmZ_YBI5NifvZPT0D5-6VoNfkUc8</string>
+    <string name="google_maps_api_key"></string>
 
 </resources>
