@@ -1,9 +1,14 @@
 package com.sicoapp.localrestaurants.ui.map
 
+import android.content.Context
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -17,13 +22,15 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
+import com.sicoapp.localrestaurants.databinding.FragmentCustumMapBinding
+import com.sicoapp.localrestaurants.databinding.FragmentMapBinding
+import com.sicoapp.localrestaurants.databinding.MapWrapperLayoutBinding
+import com.sicoapp.localrestaurants.utils.MapWrapperLayout
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_map.*
 
 
 @AndroidEntryPoint
-class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback,
-    GoogleMap.OnInfoWindowClickListener {
+class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, View.OnTouchListener {
 
     //Declare HashMap to store mapping of marker to Activity
     var markerMapId = HashMap<String, String>()
@@ -31,6 +38,15 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback,
     private val viewModel: MapViewModel by viewModels()
     private lateinit var mMapFragment: SupportMapFragment
     lateinit var googleMap: GoogleMap
+    lateinit var mapWrapperLayout: MapWrapperLayout
+    lateinit var infoWindow: FragmentCustumMapBinding
+    lateinit var infoButton: Button
+    lateinit var mMarkerMap: Marker
+    private var bgDrawableNormal: Drawable? = null
+    private var bgDrawablePressed: Drawable? = null
+    private val handler: Handler = Handler()
+    private var marker: Marker? = null
+    private var pressed = false
 
 
     override fun onCreateView(
@@ -39,7 +55,7 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback,
         savedInstanceState: Bundle?
     ): View {
 
-        val view = inflater.inflate(R.layout.fragment_map, container, false)
+        val view = FragmentMapBinding.inflate(layoutInflater)
 
         mMapFragment = (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)!!
 
@@ -47,14 +63,22 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback,
 
         mMapFragment.getMapAsync(this)
 
-        return view
+        return view.root
     }
 
 
     override fun onMapReady(googleMap: GoogleMap) {
+
         /**
          * Add a marker on the location using the latitude and longitude and move the camera to it.
          */
+
+        mapWrapperLayout = MapWrapperLayoutBinding.inflate(layoutInflater).mapRelativeLayout
+
+        infoWindow = FragmentCustumMapBinding.inflate(layoutInflater)
+
+        mapWrapperLayout.init(googleMap, getPixelsFromDp(requireContext(), 39f + 20f).toInt())
+
         viewModel.showMapCallback = object : ShowMapCallback {
 
             override fun onResponse(it: List<RestaurantResponse>) {
@@ -73,30 +97,78 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback,
 
                     googleMap.animateCamera(newLatLngZoom)
 
-                    googleMap.setInfoWindowAdapter(CustomInfoWindowGoogleMap(this@MapFragment))
+                    googleMap.setInfoWindowAdapter(MyInfoWindowAdapter(this@MapFragment))
 
-                    val mMarkerMap = googleMap.addMarker(markerOptions)
+                    mMarkerMap = googleMap.addMarker(markerOptions)
 
                     mMarkerMap.tag = response
 
-                    val idOne: String = mMarkerMap.getId()
-                    markerMapId[idOne] = "action_one"
+                    val idOne: String = mMarkerMap.id
+
+                    markerMapId[idOne] = response.name
 
                     mMarkerMap.showInfoWindow()
 
-                    googleMap.setOnInfoWindowClickListener(this@MapFragment)
+                    //googleMap.setOnInfoWindowClickListener(this@MapFragment)
+
+                    onClickConfirmed(infoWindow.btAddress, mMarkerMap)
 
                 }
             }
         }
+        infoWindow.btAddress.setOnTouchListener(this)
     }
 
-    override fun onInfoWindowClick(marker: Marker) {
+    /**
+     * This is called after a successful click
+     */
+    fun onClickConfirmed(v: View?, marker: Marker?) {
+        Toast.makeText(context, marker!!.title + "'s button clicked!", Toast.LENGTH_LONG).show()
+    }
 
-        val actionId = markerMapId[marker.id];
+    override fun onTouch(view: View, event: MotionEvent?): Boolean {
+        if (0 <= event!!.x && event.x <= view.width && 0 <= event.y && event.y <= view.height) {
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> startPress()
+                MotionEvent.ACTION_UP -> handler.postDelayed(confirmClickRunnable, 150)
+                MotionEvent.ACTION_CANCEL -> endPress()
+                else -> {
+                }
+            }
+        } else {
+            endPress()
+        }
+        return false
+    }
 
-        Toast.makeText(context, actionId, Toast.LENGTH_LONG).show();
+    private fun startPress() {
+        if (!pressed) {
+            pressed = true
+            handler.removeCallbacks(confirmClickRunnable)
+            view?.background ?: bgDrawablePressed
+            if (marker != null) marker!!.showInfoWindow()
+        }
+    }
 
+    private fun endPress(): Boolean {
+        return if (pressed) {
+            pressed = false
+            handler.removeCallbacks(confirmClickRunnable)
+            view?.background ?: bgDrawableNormal
+            if (marker != null) marker!!.showInfoWindow()
+            true
+        } else false
+    }
+
+    private val confirmClickRunnable = Runnable {
+        if (endPress()) {
+            onClickConfirmed(view, marker)
+        }
+    }
+
+    fun getPixelsFromDp(context: Context, dp: Float): Float {
+        val scale: Float = context.resources.displayMetrics.density
+        return (dp * scale + 0.5f)
     }
 
 
@@ -119,6 +191,4 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback,
         mMapFragment.onLowMemory()
         super.onLowMemory()
     }
-
-
 }

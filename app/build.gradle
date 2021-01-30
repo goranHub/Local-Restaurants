@@ -130,4 +130,5 @@ dependencies {
 
     kapt "com.android.databinding:compiler:3.4.0"
 
+
 }

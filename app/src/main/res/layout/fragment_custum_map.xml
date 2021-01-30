@@ -4,69 +4,65 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <variable name="click" type="com.sicoapp.localrestaurants.ui.map.CustomInfoWindowGoogleMap" />
+        <variable name="click" type="com.sicoapp.localrestaurants.ui.map.MyInfoWindowAdapter" />
         <variable name="fragment" type="com.sicoapp.localrestaurants.ui.map.MapFragment" />
     </data>
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:orientation="vertical"
-        android:padding="100dp">
+        android:padding="8dp">
 
-
-        <TextView
-            android:id="@+id/tv_name"
+        <Button
+            android:id="@+id/bt_name"
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginBottom="4dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
             android:textColor="@color/design_default_color_primary"
             android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@+id/tv_address"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="please_wait" />
 
-        <TextView
-            android:id="@+id/tv_address"
+        <Button
+            android:id="@+id/bt_address"
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginBottom="4dp"
-            tools:text="please_wait"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
             android:textColor="@color/design_default_color_primary"
             android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@+id/tv_longitude"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bt_name"
+            tools:text="please_wait" />
 
-        <TextView
-            android:id="@+id/tv_longitude"
+        <Button
+            android:id="@+id/bt_longitude"
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginBottom="4dp"
-            tools:text="please_wait"
-            android:textColor="@color/design_default_color_primary"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@+id/tv_latitude"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <TextView
-            android:id="@+id/tv_latitude"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginTop="112dp"
-            tools:text="please_wait"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
             android:textColor="@color/design_default_color_primary"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/bt_address"
+            tools:text="please_wait" />
+
+        <Button
+            android:id="@+id/bt_latitude"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/design_default_color_primary"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bt_longitude"
+            tools:text="please_wait" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
