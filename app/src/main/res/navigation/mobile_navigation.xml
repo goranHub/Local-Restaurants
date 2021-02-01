@@ -8,9 +8,9 @@
 
     <fragment
         android:id="@+id/nav_map"
-        android:name="com.sicoapp.localrestaurants.ui.map.MapFragment"
+        android:name="com.sicoapp.localrestaurants.ui.map.MapFragmentHome"
         android:label="@string/menu_map"
-        tools:layout="@layout/fragment_map" />
+        tools:layout="@layout/fragment_map_home" />
 
     <fragment
         android:id="@+id/nav_home"
