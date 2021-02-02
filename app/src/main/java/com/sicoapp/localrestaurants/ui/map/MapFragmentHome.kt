@@ -8,42 +8,35 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_map_home.*
 import kotlinx.android.synthetic.main.fragment_map_home.view.*
 
 
 @AndroidEntryPoint
-class MapFragmentHome : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveListener,
+class MapFragmentHome :
+    Fragment(R.layout.fragment_map_home),
+    OnMapReadyCallback,
     GoogleMap.OnMapLoadedCallback {
 
     private val viewModel: MapViewModel by viewModels()
-
-    companion object {
-        private val MAPVIEW_BUNDLE_KEY = "MapViewBundleKey"
-        private val markerIconSize = 60
-    }
-
-    internal var marker: Marker? = null
-    internal var map: GoogleMap? = null
-    private var mMapView: MapView? = null
-
-    /*
-        internal var customInfoWindow: FragmentCustumMapBinding? = null
-    */
-    private var customInfoWindow: CustomInfoWindow? = null
-    private var isMarkerCenter = true
-    private var latLng = LatLng(21.028511, 105.804817)
+    private var map: GoogleMap? = null
+    private var customInfoWindow1: CustomInfoWindow? = null
+    private var customInfoWindow2: CustomInfoWindow? = null
+    lateinit var marker1: MarkerOptions
+    lateinit var marker2: MarkerOptions
+    lateinit var mResponse: RestaurantResponse
     lateinit var binding: FragmentMapHomeBinding
+    private lateinit var mMapView: MapView
+    private lateinit var customInfoWindowList: ArrayList<CustomInfoWindow>
+    private val latlngs: ArrayList<LatLng> = ArrayList()
+    private val title: ArrayList<String> = ArrayList()
 
 
     override fun onCreateView(
@@ -52,108 +45,119 @@ class MapFragmentHome : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveLi
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentMapHomeBinding.inflate(layoutInflater)
-
-        val mapViewBundle: Bundle? = savedInstanceState?.getBundle(MAPVIEW_BUNDLE_KEY)
         mMapView = binding.map
-        mMapView?.onCreate(mapViewBundle)
-        mMapView?.getMapAsync(this)
+        mMapView.onCreate(savedInstanceState)
+        mMapView.getMapAsync(this)
         return binding.root
     }
 
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        var mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY)
-        if (mapViewBundle == null) {
-            mapViewBundle = Bundle()
-            outState.putBundle(MAPVIEW_BUNDLE_KEY, mapViewBundle)
-        }
-
-        mMapView?.onSaveInstanceState(mapViewBundle)
-    }
-
-
     override fun onMapReady(googleMap: GoogleMap?) {
+
         map = googleMap
 
         viewModel.showMapCallback = object : ShowMapCallback {
-
             @SuppressLint("ClickableViewAccessibility")
             override fun onResponse(it: List<RestaurantResponse>) {
-                it.map { response ->
 
-                    val position = LatLng(response.latitude, response.longitude)
-                    val name = response.name
+                /*     it.map { response ->
+                         mResponse = response
+                         val position = LatLng(response.latitude, response.longitude)
+                         val name = response.name
+                     }*/
 
-                    val marker = MarkerOptions()
+                createMarker()
 
-                    marker
-                        .position(position)
-                        .title(name)
-                        .snippet("I am custom Location Marker.")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                map?.animateCamera(
+                    CameraUpdateFactory
+                        .newLatLngZoom(marker1.position, 17f)
+                )
 
-                    map?.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 15f))
-                    map?.setOnCameraMoveListener(this@MapFragmentHome)
-                    map?.setOnMapLoadedCallback(this@MapFragmentHome)
+                map?.setOnMapLoadedCallback(this@MapFragmentHome)
 
-                    val mMarkerTag = map?.addMarker(marker)
-                    mMarkerTag?.tag = response
-
-                    customInfoWindow = CustomInfoWindow(
-                        map,
-                        mMarkerTag,
-                        requireContext(),
-                        binding.baseLayout
-                    )
-
-                    customInfoWindow?.onBtnNameClickListener = View.OnTouchListener { v, e ->
-                        Toast.makeText(context, "Call btn clicked", Toast.LENGTH_SHORT).show()
-                        false
-                    }
-
-                    map?.setOnMarkerClickListener {
-                        customInfoWindow?.toggleInfo()
-                        false
-                    }
-                }
             }
         }
     }
 
-    override fun onCameraMove() {
-        isMarkerCenter = false
-        customInfoWindow?.moveToMarkerPosition()
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onMapLoaded() {
+
+        map?.setOnMarkerClickListener {
+            customInfoWindow1?.toggleInfo()
+            false
+        }
+
+        customInfoWindow2 = CustomInfoWindow(
+            map!!,
+            marker2,
+            requireContext(),
+            binding.mapLayout
+        )
+
+        customInfoWindow1 = CustomInfoWindow(
+            map!!,
+            marker1,
+            requireContext(),
+            binding.mapLayout
+        )
+
+        customInfoWindow1?.onBtnNameClickListener = View.OnTouchListener { _, _ ->
+            Toast.makeText(context, "Call btn clicked", Toast.LENGTH_SHORT).show()
+            false
+        }
     }
 
-    override fun onMapLoaded() {
-        customInfoWindow?.moveToMarkerPosition()
-        customInfoWindow?.hideInfo()
+    @SuppressLint("ClickableViewAccessibility")
+    private fun createMarker() {
+
+        customInfoWindow2?.onBtnNameClickListener = View.OnTouchListener { _, _ ->
+            Toast.makeText(context, "Call btn clicked", Toast.LENGTH_SHORT).show()
+            false
+        }
+
+        marker1 = MarkerOptions()
+        marker1
+            .position(LatLng(45.80297, 16.00064))
+            .title("Bufalow Sam")
+            .snippet("193-6569 Ut, St.")
+
+        marker2 = MarkerOptions()
+        marker2
+            .position(LatLng(45.80297, 16.00121))
+            .title("9724 Inceptos Ave")
+            .snippet("193-6569 Ut, St.")
+
     }
+
 
     override fun onResume() {
         super.onResume()
-        mMapView?.onResume()
+        this.mMapView.onResume()
     }
+
     override fun onStart() {
         super.onStart()
-        mMapView?.onStart()
+        this.mMapView.onStart()
     }
+
     override fun onStop() {
         super.onStop()
-        mMapView?.onStop()
+        this.mMapView.onStop()
     }
+
     override fun onPause() {
-        mMapView?.onPause()
         super.onPause()
+        this.mMapView.onPause()
     }
+
     override fun onDestroy() {
-        mMapView?.onDestroy()
         super.onDestroy()
+        mMapView.onDestroy()
     }
+
     override fun onLowMemory() {
         super.onLowMemory()
-        mMapView?.onLowMemory()
+        mMapView.onLowMemory()
     }
+
+
 }
