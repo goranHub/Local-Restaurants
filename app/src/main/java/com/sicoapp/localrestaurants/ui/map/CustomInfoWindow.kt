@@ -12,13 +12,16 @@ import android.widget.Button
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.R
+import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
 
 @SuppressLint("ClickableViewAccessibility", "InflateParams")
 class CustomInfoWindow(
     private val map: GoogleMap,
     val marker: MarkerOptions,
     private val context: Context,
+    val response : RestaurantResponse,
     private val mapLayout: ViewGroup
+
 ) {
     lateinit var infoWindowForMarker: ViewGroup
     private lateinit var custumMap: ViewGroup
@@ -41,6 +44,24 @@ class CustomInfoWindow(
         @SuppressLint("ClickableViewAccessibility")
         set(value) {
             btnName.setOnTouchListener(value)
+        }
+
+    var onBtnAddressClickListener: View.OnTouchListener? = null
+        @SuppressLint("ClickableViewAccessibility")
+        set(value) {
+            btnAddress.setOnTouchListener(value)
+        }
+
+    var onBtnLongitudeClickListener: View.OnTouchListener? = null
+        @SuppressLint("ClickableViewAccessibility")
+        set(value) {
+            btnLongitude.setOnTouchListener(value)
+        }
+
+    var onBtnLatitudeClickListener: View.OnTouchListener? = null
+        @SuppressLint("ClickableViewAccessibility")
+        set(value) {
+            btnLatitude.setOnTouchListener(value)
         }
 
     init {
@@ -68,10 +89,7 @@ class CustomInfoWindow(
         btnLatitude = infoWindowForMarker.findViewById(R.id.bt_latitude)
         closeBtn = infoWindowForMarker.findViewById(R.id.bt_close)
 
-/*        btnName.text = response.name
         btnAddress.text = response.address
-        btnLongitude.text = response.longitude.toString()
-        btnLatitude.text = response.latitude.toString()*/
 
         btnName.text = marker.title
         btnLongitude.text = marker.position.longitude.toString()

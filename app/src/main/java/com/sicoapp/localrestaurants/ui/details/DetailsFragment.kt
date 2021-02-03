@@ -6,13 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.sicoapp.localrestaurants.BaseActivity
-import com.sicoapp.localrestaurants.databinding.FragmentHomeBinding
+import com.sicoapp.localrestaurants.databinding.FragmentDetailsBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class DetailsFragment : BaseFR<FragmentHomeBinding, BaseActivity>() {
+class DetailsFragment : BaseFR<FragmentDetailsBinding, BaseActivity>() {
 
     private val viewModel: DetailsViewModel by viewModels()
 
@@ -30,7 +30,7 @@ class DetailsFragment : BaseFR<FragmentHomeBinding, BaseActivity>() {
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun setBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding =
-        FragmentHomeBinding.inflate(inflater, container, false)
+    override fun setBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentDetailsBinding =
+        FragmentDetailsBinding.inflate(inflater, container, false)
 
 }

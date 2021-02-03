@@ -6,12 +6,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.snackbar.Snackbar
 import com.sicoapp.localrestaurants.R
-import kotlinx.android.synthetic.main.dialog_progress.*
+
 
 /**
  * @author ll4
@@ -44,11 +46,33 @@ abstract class BaseFR <T : ViewBinding, A : Any> : Fragment() {
 
     abstract fun setBinding(inflater: LayoutInflater, container: ViewGroup?): T
 
-    open fun showProgressDialog(text: String) {
-        dialog = Dialog(requireContext())
-        dialog.setContentView(R.layout.dialog_progress)
-        dialog.tv_name.text = text
-        dialog.show()
+    open fun alertDialog(name: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Restaurant")
+        builder.setMessage(name)
+        //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
+
+        builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+            Toast.makeText(
+                requireContext(),
+                android.R.string.yes, Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        builder.setNegativeButton(android.R.string.no) { dialog, which ->
+            Toast.makeText(
+                requireContext(),
+                android.R.string.no, Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        builder.setNeutralButton("Maybe") { dialog, which ->
+            Toast.makeText(
+                requireContext(),
+                "Maybe", Toast.LENGTH_SHORT
+            ).show()
+        }
+        builder.show()
     }
 
     open fun showErrorSnackBar(message: String) {

@@ -21,7 +21,6 @@ class DetailsViewModel @ViewModelInject constructor(
     }
     val text: LiveData<String> = _text
 
-
 }
 
 
