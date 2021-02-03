@@ -10,10 +10,8 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.ScaleAnimation
 import android.widget.Button
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.R
-import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
 
 @SuppressLint("ClickableViewAccessibility", "InflateParams")
 class CustomInfoWindow(
@@ -53,7 +51,8 @@ class CustomInfoWindow(
     private fun populateMarkerWithInfoWindow(
         marker: MarkerOptions,
         mapLayout: ViewGroup
-    ) {
+    )
+    {
         map.addMarker(marker)
 
         infoWindowForMarker = LayoutInflater
@@ -69,22 +68,22 @@ class CustomInfoWindow(
         btnLatitude = infoWindowForMarker.findViewById(R.id.bt_latitude)
         closeBtn = infoWindowForMarker.findViewById(R.id.bt_close)
 
-
 /*        btnName.text = response.name
         btnAddress.text = response.address
         btnLongitude.text = response.longitude.toString()
         btnLatitude.text = response.latitude.toString()*/
+
         btnName.text = marker.title
         btnLongitude.text = marker.position.longitude.toString()
         btnLatitude.text = marker.position.latitude.toString()
 
-
+        infoWindowForMarker.visibility = View.INVISIBLE
 
         mapLayout.addView(infoWindowForMarker)
 
     }
 
-    fun getMarkerPosition(): Pair<Float, Float>? {
+    private fun getMarkerPosition(): Pair<Float, Float>? {
         val markerLocation = marker.position ?: return null
         val projection = map.projection ?: return null
         val screenPosition = projection.toScreenLocation(markerLocation)
@@ -93,13 +92,11 @@ class CustomInfoWindow(
         return Pair(markerX, markerY)
     }
 
-    fun moveToMarkerPosition() {
-        moveTo(getMarkerPosition())
-    }
 
     private fun moveTo(position: Pair<Float, Float>?) {
         val (x, y) = position ?: return
-        infoWindowForMarker.x = x - (infoWindowForMarker.width.toFloat().div(2f))
+        infoWindowForMarker.x =
+            x - (infoWindowForMarker.width.toFloat().div(2f))
         infoWindowForMarker.y =
             y - (custumMap.height.toFloat()) + ((btnName.height.toFloat().times(6.3f)))
     }
