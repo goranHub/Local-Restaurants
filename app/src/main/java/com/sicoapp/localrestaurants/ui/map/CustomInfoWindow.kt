@@ -16,7 +16,7 @@ import com.sicoapp.localrestaurants.R
 @SuppressLint("ClickableViewAccessibility", "InflateParams")
 class CustomInfoWindow(
     private val map: GoogleMap,
-    private val marker: MarkerOptions,
+    val marker: MarkerOptions,
     private val context: Context,
     private val mapLayout: ViewGroup
 ) {
