@@ -16,11 +16,6 @@ class MapViewModel  @ViewModelInject constructor(
 
     var showMapCallback: ShowMapCallback? = null
 
-    val name = MutableLiveData<String>()
-
-    fun sendName(text: String) {
-        name.value = text
-    }
 
     init {
         load()

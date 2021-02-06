@@ -11,5 +11,5 @@ data class RestaurantResponse(
     @SerializedName("Longitude")
     val longitude: Double,
     @SerializedName("Name")
-    val name: String
+    var name: String
 )
