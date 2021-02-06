@@ -1,8 +1,13 @@
 package com.sicoapp.localrestaurants.data.di
 
+import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
+import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
+import com.sicoapp.localrestaurants.domain.Repository
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
+import javax.inject.Singleton
 
 /**
  * @author ll4
@@ -10,6 +15,21 @@ import dagger.hilt.android.components.ApplicationComponent
  */
 @Module
 @InstallIn(ApplicationComponent::class)
-class RepositoryModule {
+object RepositoryModule {
 
+
+    @Singleton
+    @Provides
+    fun provideMovieRepository(
+        networkDataSource: NetworkDataSource,
+        databaseDataSource: DatabaseDataSource
+    ): Repository {
+        return Repository(
+            networkDataSource = networkDataSource,
+            databaseDataSource = databaseDataSource
+        )
+    }
 }
+
+
+
