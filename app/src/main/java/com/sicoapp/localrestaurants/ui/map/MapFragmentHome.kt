@@ -2,18 +2,22 @@ package com.sicoapp.localrestaurants.ui.map
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
+import com.sicoapp.localrestaurants.databinding.FragmentDialogWithDataBinding
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
+import com.sicoapp.localrestaurants.utils.DialogWithData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_map_home.*
 import kotlinx.android.synthetic.main.fragment_map_home.view.*
@@ -26,8 +30,8 @@ class MapFragmentHome :
     GoogleMap.OnMapLoadedCallback {
 
     private val viewModel: MapViewModel by viewModels()
-    lateinit var name: String
     private lateinit var mMapView: MapView
+    private lateinit var restaurantList : List<RestaurantResponse>
     override var binding: FragmentMapHomeBinding? = null
     private var map: GoogleMap? = null
     private var customInfoWindowList = mutableListOf<CustomInfoWindow>()
@@ -38,11 +42,22 @@ class MapFragmentHome :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         binding = setBinding(inflater, container)
         mMapView = binding!!.map
         mMapView.onCreate(savedInstanceState)
         mMapView.getMapAsync(this)
+
+
+        observeViewModel()
+
         return binding!!.root
+    }
+
+    private fun observeViewModel() {
+        viewModel.name.observe(viewLifecycleOwner, {
+            //
+        })
     }
 
 
@@ -53,6 +68,7 @@ class MapFragmentHome :
 
         viewModel.showMapCallback = object : ShowMapCallback {
             override fun onResponse(it: List<RestaurantResponse>) {
+                restaurantList = it
                 createMarker(it)
             }
         }
@@ -66,57 +82,50 @@ class MapFragmentHome :
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onMapLoaded() {
-
-
         map?.setOnMarkerClickListener { marker ->
             markerList.map { markerOptions ->
 
                 if (markerOptions.title == marker.title) {
-                    customInfoWindowList.map {
 
-                        if (it.marker.title == marker.title) {
-                            it.toggleInfo()
+                    customInfoWindowList.map { cuw->
+
+                        if (cuw.marker.title == marker.title) {
+                            cuw.toggleInfo()
+
+                            cuw.onBtnNameClickListener =
+                                View.OnTouchListener { _, _ ->
+                                    val dialog = DialogWithData()
+                                    dialog.texxt = cuw.response.name
+                                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                                    false
+                                }
+
+                            cuw.onBtnAddressClickListener =
+                                View.OnTouchListener { _, _ ->
+                                    val dialog = DialogWithData()
+                                    dialog.texxt = cuw.response.address
+                                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                                    false
+                                }
+
+                            cuw.onBtnLongitudeClickListener =
+                                View.OnTouchListener { _, _ ->
+                                    val dialog = DialogWithData()
+                                    dialog.texxt = cuw.response.longitude.toString()
+                                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                                    false
+                                }
+
+                            cuw.onBtnLatitudeClickListener =
+                                View.OnTouchListener { _, _ ->
+                                    alertDialog(cuw.response.latitude.toString())
+                                    false
+                                }
                         }
                     }
                 }
             }
             false
-        }
-
-        customInfoWindowList.map {
-                cuw->
-
-            cuw.onBtnNameClickListener =
-                View.OnTouchListener { _, _ ->
-                    alertDialog("name")
-                    showErrorSnackBar("name")
-                    Toast.makeText(context, cuw.marker.title, Toast.LENGTH_SHORT).show()
-                    false
-                }
-
-            cuw.onBtnAddressClickListener =
-                View.OnTouchListener { _, _ ->
-                    alertDialog("Address")
-                    showErrorSnackBar("Address")
-                    Toast.makeText(context, cuw.response.address, Toast.LENGTH_SHORT).show()
-                    false
-                }
-
-            cuw.onBtnLongitudeClickListener =
-                View.OnTouchListener { _, _ ->
-                    alertDialog("Longitude")
-                    showErrorSnackBar("Longitude")
-                    Toast.makeText(context, cuw.response.longitude.toString(), Toast.LENGTH_SHORT).show()
-                    false
-                }
-
-            cuw.onBtnLatitudeClickListener =
-                View.OnTouchListener { _, _ ->
-                    alertDialog("Latitude")
-                    showErrorSnackBar("Latitude")
-                    Toast.makeText(context, cuw.response.latitude.toString(), Toast.LENGTH_SHORT).show()
-                    false
-                }
         }
     }
 
@@ -126,7 +135,6 @@ class MapFragmentHome :
 
             mResponseList.forEach { restaurantResponse ->
                 val marker = MarkerOptions()
-
                 marker
                     .position(LatLng(restaurantResponse.latitude, restaurantResponse.longitude))
                     .title(restaurantResponse.name)

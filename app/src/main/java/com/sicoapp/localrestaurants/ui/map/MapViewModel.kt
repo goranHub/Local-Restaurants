@@ -2,6 +2,7 @@ package com.sicoapp.localrestaurants.ui.map
 
 import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.sicoapp.localrestaurants.data.remote.RestaurantServis
 import com.sicoapp.localrestaurants.utils.enqueueR
@@ -14,6 +15,12 @@ class MapViewModel  @ViewModelInject constructor(
 ) : ViewModel() {
 
     var showMapCallback: ShowMapCallback? = null
+
+    val name = MutableLiveData<String>()
+
+    fun sendName(text: String) {
+        name.value = text
+    }
 
     init {
         load()
