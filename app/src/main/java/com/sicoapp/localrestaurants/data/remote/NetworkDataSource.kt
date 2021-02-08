@@ -1,8 +1,18 @@
 package com.sicoapp.localrestaurants.data.remote
 
+import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
+import io.reactivex.Single
+import javax.inject.Inject
+
 /**
  * @author ll4
  * @date 2/6/2021
  */
-class NetworkDataSource {
+class NetworkDataSource @Inject constructor(
+    private val restaurantServis: RestaurantServis
+) {
+
+    fun fetchRestaurants():  Single<List<RestaurantResponse>>  {
+        return restaurantServis.getAll()
+    }
 }

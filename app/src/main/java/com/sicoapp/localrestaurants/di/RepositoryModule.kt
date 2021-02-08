@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.data.di
+package com.sicoapp.localrestaurants.di
 
 import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource

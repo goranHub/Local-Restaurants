@@ -1,15 +1,18 @@
 package com.sicoapp.localrestaurants.data.local
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.android.parcel.Parcelize
 
 /**
  * @author ll4
  * @date 1/26/2021
  */
 @Entity
-data class Restaurant (
+@Parcelize
+data class Restaurant(
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "address")
     val address: String,
@@ -21,5 +24,5 @@ data class Restaurant (
     val longitude: String,
 
     @ColumnInfo(name = "name")
-    val name: String
-)
+    var name: String
+) : Parcelable

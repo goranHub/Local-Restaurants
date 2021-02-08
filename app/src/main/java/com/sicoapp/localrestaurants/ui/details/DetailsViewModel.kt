@@ -6,9 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.sicoapp.localrestaurants.data.remote.RestaurantServis
-import com.sicoapp.localrestaurants.utils.enqueueR
 import dagger.hilt.android.qualifiers.ApplicationContext
-import timber.log.Timber
 
 
 class DetailsViewModel @ViewModelInject constructor(

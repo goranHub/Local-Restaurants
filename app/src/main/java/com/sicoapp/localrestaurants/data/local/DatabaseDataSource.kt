@@ -9,9 +9,13 @@ import javax.inject.Inject
 class DatabaseDataSource @Inject constructor(
     private val databaseDao : DatabaseDao
 ){
-    fun saveRestaurant(restaurant : Restaurant){
-        databaseDao.saveRestaurant(restaurant)
+    fun saveRestaurantByName(restaurant : Restaurant){
+        databaseDao.insertAll(restaurant)
     }
 
-    fun getRestaurant() = databaseDao.getRestaurant()
+    fun getRestaurant() = databaseDao.getAll()
+
+    fun saveRestaurants(item : Restaurant) {
+        databaseDao.insertAll(item)
+    }
 }

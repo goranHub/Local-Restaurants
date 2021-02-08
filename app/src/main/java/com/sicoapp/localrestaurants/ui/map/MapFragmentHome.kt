@@ -13,12 +13,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.BaseActivity
-import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
+import com.sicoapp.localrestaurants.MainActivity
+import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
-import com.sicoapp.localrestaurants.utils.DialogEditData
 import com.sicoapp.localrestaurants.utils.DialogWithData
 import com.sicoapp.localrestaurants.utils.ListenerSubmitData
+import com.sicoapp.localrestaurants.utils.hasInternetConnection
+import com.sicoapp.localrestaurants.utils.livedata.Status
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -29,8 +31,8 @@ class MapFragmentHome :
 
     private val viewModel: MapViewModel by viewModels()
     private lateinit var mMapView: MapView
-    private lateinit var listReasturant: List<RestaurantResponse>
-    private lateinit var item: RestaurantResponse
+    private var listReasturant: List<Restaurant>? = null
+    private lateinit var item: Restaurant
     override var binding: FragmentMapHomeBinding? = null
     private var map: GoogleMap? = null
 
@@ -47,25 +49,26 @@ class MapFragmentHome :
         return binding!!.root
     }
 
-
     override fun onMapReady(googleMap: GoogleMap?) {
+
         map = googleMap
         map?.uiSettings?.isZoomControlsEnabled = true
         map?.uiSettings?.isMyLocationButtonEnabled = true
 
-        viewModel.showMapCallback = object : ShowMapCallback {
-            override fun onResponse(it: List<RestaurantResponse>) {
-                listReasturant = it
-                it.map {
 
+        if(checkHasInternetConnection()){
+            viewModel.getRestraurants()
+            observeRestaurantData()
+        }
+
+        listReasturant?.map {
                     map?.addMarker(
                         MarkerOptions()
-                            .position(LatLng(it.latitude, it.longitude))
+                            .position(LatLng(it.latitude.toDouble(),
+                                             it.longitude.toDouble()))
                             .title(it.name)
                     )
                 }
-            }
-        }
 
         map?.setOnMarkerClickListener(this)
         map?.animateCamera(
@@ -77,22 +80,41 @@ class MapFragmentHome :
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
-
-        item = listReasturant.first{it.name == marker.title}
-        val dialog = DialogWithData(item)
+        item = listReasturant!!.first { it.name == marker.title }
+        var dialog = DialogWithData(item)
         dialog.show(requireActivity().supportFragmentManager, dialog.tag)
-
-
 
         dialog.listener = object : ListenerSubmitData{
             override fun onSubmitData(name: String) {
-                    item.name = name
-                    val dialog = DialogWithData(item)
-                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
-
+                item.name = name
+                dialog = DialogWithData(item)
+                dialog.show(requireActivity().supportFragmentManager, dialog.tag)
             }
         }
         return true
+    }
+
+    private fun observeRestaurantData() {
+        viewModel
+            .restaurantData
+            .observe(viewLifecycleOwner, { resource ->
+                when(resource.status){
+                    Status.SUCCESS -> {
+                        listReasturant = resource.data
+                    }
+                    Status.LOADING -> {
+                    }
+                    Status.ERROR -> {
+                    }
+                }
+            }
+        )
+    }
+
+    private fun checkHasInternetConnection(): Boolean {
+        val mainActivity = activity as MainActivity
+        mainActivity.checkInternetConnection()
+        return hasInternetConnection(mainActivity)
     }
 
     override fun setBinding(

@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.data.di
+package com.sicoapp.localrestaurants.di
 
 import android.content.Context
 import android.content.SharedPreferences

@@ -1,9 +1,10 @@
 package com.sicoapp.localrestaurants.domain
 
-import androidx.lifecycle.LiveData
 import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
 import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
+import com.sicoapp.localrestaurants.domain.mappers.mapToRestaurant
+import io.reactivex.Observable
 
 /**
  * @author ll4
@@ -15,9 +16,24 @@ class Repository(
 ){
 
 
-    fun fetchRestaurant(): LiveData<List<Restaurant>> {
-        return databaseDataSource.getRestaurant()
+    /**
+     * save from network in database
+     */
+    fun fetchRestaurants(): Observable<List<Restaurant>> {
+        return networkDataSource
+            .fetchRestaurants()
+            .toObservable()
+            .map {
+                it.map {
+                    it.mapToRestaurant()
+                }
+            }
+            .doOnNext {
+                it?.let {list ->
+                    list.forEach {
+                        databaseDataSource.saveRestaurants(it)
+                    }
+                }
+            }
     }
-
-
 }

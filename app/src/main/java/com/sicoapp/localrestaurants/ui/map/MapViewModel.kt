@@ -1,41 +1,55 @@
 package com.sicoapp.localrestaurants.ui.map
 
-import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.sicoapp.localrestaurants.data.remote.RestaurantServis
-import com.sicoapp.localrestaurants.utils.enqueueR
-import dagger.hilt.android.qualifiers.ApplicationContext
-import timber.log.Timber
+import com.sicoapp.localrestaurants.data.local.Restaurant
+import com.sicoapp.localrestaurants.domain.Repository
+import com.sicoapp.localrestaurants.utils.livedata.Resource
+import io.reactivex.Observer
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 
-class MapViewModel  @ViewModelInject constructor(
-    @ApplicationContext application: Context,
-    private val restaurantServis: RestaurantServis
+class MapViewModel @ViewModelInject constructor(
+    private val repository: Repository
 ) : ViewModel() {
 
-    var showMapCallback: ShowMapCallback? = null
+    val restaurantData: LiveData<Resource<List<Restaurant>>> get() = _restaurantData
+    private val _restaurantData = MutableLiveData<Resource<List<Restaurant>>>()
+    private val compositeDisposable = CompositeDisposable()
 
 
-    init {
-        load()
+
+    fun getRestraurants() {
+        repository.fetchRestaurants()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : Observer<List<Restaurant>>{
+                override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
+                    _restaurantData.value = Resource.loading(null)
+                }
+
+                override fun onNext(restaurant: List<Restaurant>) {
+                    _restaurantData.value = Resource.success(restaurant)
+                }
+
+                override fun onError(e: Throwable) {
+                    val message = e.localizedMessage ?: ""
+                    _restaurantData.value = Resource.error(message, null)
+                }
+
+                override fun onComplete() {
+
+                }
+            })
     }
 
-    private fun load() {
-        val currentCall = restaurantServis.get()
-
-        currentCall.enqueueR {
-            this.onResponse = {
-                Timber.d("onResponse")
-                showMapCallback?.onResponse(it.body()!!)
-
-                it.body()?.map {
-                    Timber.d(it.name)
-                }
-            }
-            this.onFailure = {
-                Timber.d("onFailure")
-            }
-        }
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
     }
 }

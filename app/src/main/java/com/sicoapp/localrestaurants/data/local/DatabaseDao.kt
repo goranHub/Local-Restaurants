@@ -11,10 +11,12 @@ import androidx.room.Query
 interface DatabaseDao{
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun saveRestaurant(forecast: Restaurant)
+    fun insertAll(vararg restaurant: Restaurant)
 
     @Query("SELECT * FROM restaurant")
-    fun getRestaurant(): LiveData<List<Restaurant>>
+    fun getAll(): LiveData<List<Restaurant>>
+
+
 
 
 }

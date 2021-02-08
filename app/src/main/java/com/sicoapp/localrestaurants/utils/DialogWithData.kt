@@ -10,12 +10,12 @@ import android.view.WindowManager
 import android.widget.Button
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
-import com.sicoapp.localrestaurants.data.remote.response.RestaurantResponse
+import com.sicoapp.localrestaurants.data.local.Restaurant
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
-class DialogWithData(private val restaurantResponse: RestaurantResponse ) : DialogFragment() {
+class DialogWithData(private val restaurant: Restaurant) : DialogFragment() {
 
-    lateinit var listener : ListenerSubmitData
+    var listener : ListenerSubmitData? = null
 
 
     override fun onCreateView(
@@ -31,10 +31,10 @@ class DialogWithData(private val restaurantResponse: RestaurantResponse ) : Dial
         val btLongitude = v.findViewById<Button>(R.id.bt_longitude)
         val btLatitude = v.findViewById<Button>(R.id.bt_latitude)
 
-        btTitle.text = restaurantResponse.name
-        btAddress.text = restaurantResponse.address
-        btLongitude.text = restaurantResponse.longitude.toString()
-        btLatitude.text = restaurantResponse.latitude.toString()
+        btTitle.text = restaurant.name
+        btAddress.text = restaurant.address
+        btLongitude.text = restaurant.longitude
+        btLatitude.text = restaurant.latitude
 
         return v
     }
@@ -58,28 +58,28 @@ class DialogWithData(private val restaurantResponse: RestaurantResponse ) : Dial
 
     private fun setupClickListenersLatitude(view: View) {
         view.bt_latitude.setOnClickListener {
-            val dialog = DialogEditData(restaurantResponse.latitude.toString(), listener)
+            val dialog = DialogEditData(restaurant.latitude.toString(), listener)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
 
     private fun setupClickListenersLongitude(view: View) {
         view.bt_longitude.setOnClickListener {
-            val dialog = DialogEditData(restaurantResponse.longitude.toString(), listener)
+            val dialog = DialogEditData(restaurant.longitude.toString(), listener)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
 
     private fun setupClickListenersAddress(view: View) {
         view.bt_address.setOnClickListener {
-            val dialog = DialogEditData(restaurantResponse.address, listener)
+            val dialog = DialogEditData(restaurant.address, listener)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
 
     private fun setupClickListenersTitle(view: View) {
         view.bt_title.setOnClickListener {
-            val dialog = DialogEditData(restaurantResponse.name, listener)
+            val dialog = DialogEditData(restaurant.name, listener)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }

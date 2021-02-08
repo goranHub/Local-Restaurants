@@ -11,5 +11,6 @@
     <string name="menu_map">Restaurant Map</string>
     <string name="menu_favorit">Favorit</string>
     <string name="google_maps_api_key">AIzaSyBdMGSJwYlzdmbsxjqmf2IqT6eD2yJMZzI</string>
+    <string name="no_internet_connection">No Internet connection</string>
 
 </resources>
