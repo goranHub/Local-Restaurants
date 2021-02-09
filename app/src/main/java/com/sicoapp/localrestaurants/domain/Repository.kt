@@ -5,15 +5,17 @@ import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
 import com.sicoapp.localrestaurants.domain.mappers.mapToRestaurant
 import io.reactivex.Observable
+import javax.inject.Inject
 
 /**
  * @author ll4
  * @date 1/26/2021
  */
-class Repository(
+class Repository
+@Inject constructor(
     private val networkDataSource: NetworkDataSource,
     private val databaseDataSource: DatabaseDataSource
-){
+) {
 
 
     /**
@@ -24,12 +26,10 @@ class Repository(
             .fetchRestaurants()
             .toObservable()
             .map {
-                it.map {
-                    it.mapToRestaurant()
-                }
+                it.mapToRestaurant()
             }
             .doOnNext {
-                it?.let {list ->
+                it?.let { list ->
                     list.forEach {
                         databaseDataSource.saveRestaurants(it)
                     }

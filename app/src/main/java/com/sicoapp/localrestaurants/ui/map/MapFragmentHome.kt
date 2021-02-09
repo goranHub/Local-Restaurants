@@ -52,29 +52,8 @@ class MapFragmentHome :
     override fun onMapReady(googleMap: GoogleMap?) {
 
         map = googleMap
-        map?.uiSettings?.isZoomControlsEnabled = true
-        map?.uiSettings?.isMyLocationButtonEnabled = true
+        observeRestaurantData(map)
 
-
-        if(checkHasInternetConnection()){
-            viewModel.getRestraurants()
-            observeRestaurantData()
-        }
-
-        listReasturant?.map {
-                    map?.addMarker(
-                        MarkerOptions()
-                            .position(LatLng(it.latitude.toDouble(),
-                                             it.longitude.toDouble()))
-                            .title(it.name)
-                    )
-                }
-
-        map?.setOnMarkerClickListener(this)
-        map?.animateCamera(
-            CameraUpdateFactory
-                .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
-        )
     }
 
 
@@ -94,20 +73,40 @@ class MapFragmentHome :
         return true
     }
 
-    private fun observeRestaurantData() {
+    private fun observeRestaurantData(map : GoogleMap?) {
         viewModel
             .restaurantData
             .observe(viewLifecycleOwner, { resource ->
                 when(resource.status){
                     Status.SUCCESS -> {
                         listReasturant = resource.data
+
+                        listReasturant?.map {
+                            map?.addMarker(
+                                MarkerOptions()
+                                    .position(LatLng(it.latitude.toDouble(),
+                                        it.longitude.toDouble()))
+                                    .title(it.name)
+                            )
+                        }
                     }
                     Status.LOADING -> {
+                        showLoading()
                     }
                     Status.ERROR -> {
+                        hideLoading()
                     }
                 }
             }
+        )
+
+        map?.uiSettings?.isZoomControlsEnabled = true
+        map?.uiSettings?.isMyLocationButtonEnabled = true
+
+        map?.setOnMarkerClickListener(this)
+        map?.animateCamera(
+            CameraUpdateFactory
+                .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
         )
     }
 
@@ -115,6 +114,14 @@ class MapFragmentHome :
         val mainActivity = activity as MainActivity
         mainActivity.checkInternetConnection()
         return hasInternetConnection(mainActivity)
+    }
+
+    private fun showLoading() {
+        binding!!.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        binding!!.progressBar.visibility = View.GONE
     }
 
     override fun setBinding(

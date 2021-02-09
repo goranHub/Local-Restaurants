@@ -1,5 +1,6 @@
 package com.sicoapp.localrestaurants.ui.map
 
+import android.annotation.SuppressLint
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,7 +14,8 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
-class MapViewModel @ViewModelInject constructor(
+class MapViewModel
+@ViewModelInject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
@@ -21,32 +23,34 @@ class MapViewModel @ViewModelInject constructor(
     private val _restaurantData = MutableLiveData<Resource<List<Restaurant>>>()
     private val compositeDisposable = CompositeDisposable()
 
+    init {
+        getRestraurants()
+    }
 
-
+    @SuppressLint("CheckResult")
     fun getRestraurants() {
         repository.fetchRestaurants()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : Observer<List<Restaurant>>{
-                override fun onSubscribe(d: Disposable) {
-                    compositeDisposable.add(d)
+            .subscribe(
+                {
+                    _restaurantData.value = Resource.success(it)
+
+                },
+                {
+                    val message = it.localizedMessage ?: ""
+                    _restaurantData.value = Resource.error(message, null)
+                },
+                {
+
+                },
+                {
+                    compositeDisposable.add(it)
                     _restaurantData.value = Resource.loading(null)
                 }
-
-                override fun onNext(restaurant: List<Restaurant>) {
-                    _restaurantData.value = Resource.success(restaurant)
-                }
-
-                override fun onError(e: Throwable) {
-                    val message = e.localizedMessage ?: ""
-                    _restaurantData.value = Resource.error(message, null)
-                }
-
-                override fun onComplete() {
-
-                }
-            })
+            )
     }
+
 
     override fun onCleared() {
         super.onCleared()
