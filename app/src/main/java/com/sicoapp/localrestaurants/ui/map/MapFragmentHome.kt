@@ -22,6 +22,7 @@ import com.sicoapp.localrestaurants.utils.ListenerSubmitData
 import com.sicoapp.localrestaurants.utils.hasInternetConnection
 import com.sicoapp.localrestaurants.utils.livedata.Status
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 
 @AndroidEntryPoint
@@ -50,13 +51,27 @@ class MapFragmentHome :
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
-
         map = googleMap
+
+        Timber.d("${map.toString()} 11 ")
+
+        map?.uiSettings?.isZoomControlsEnabled = true
+        map?.uiSettings?.isMyLocationButtonEnabled = true
+
+        map?.setOnMarkerClickListener(this)
+        map?.animateCamera(
+            CameraUpdateFactory
+                .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
+        )
+
+        Timber.d("${map.toString()} 222 ")
+
         observeRestaurantData(map)
 
+        Timber.d("${map.toString()} 333 ")
+
+
     }
-
-
     override fun onMarkerClick(marker: Marker): Boolean {
 
         item = listReasturant!!.first { it.name == marker.title }
@@ -72,16 +87,17 @@ class MapFragmentHome :
         }
         return true
     }
-
     private fun observeRestaurantData(map : GoogleMap?) {
+        Timber.d("${map} 44 ")
         viewModel
             .restaurantData
             .observe(viewLifecycleOwner, { resource ->
                 when(resource.status){
                     Status.SUCCESS -> {
                         listReasturant = resource.data
-
+                        Timber.d("${listReasturant.toString()} 55 ")
                         listReasturant?.map {
+                            Timber.d("${it} 66 ")
                             map?.addMarker(
                                 MarkerOptions()
                                     .position(LatLng(it.latitude.toDouble(),
@@ -91,24 +107,19 @@ class MapFragmentHome :
                         }
                     }
                     Status.LOADING -> {
+                        Timber.d("${ Status.LOADING.toString()} 77 ")
                         showLoading()
                     }
                     Status.ERROR -> {
+                        Timber.d("${ Status.ERROR.toString()} 88 ")
                         hideLoading()
                     }
                 }
             }
         )
-
-        map?.uiSettings?.isZoomControlsEnabled = true
-        map?.uiSettings?.isMyLocationButtonEnabled = true
-
-        map?.setOnMarkerClickListener(this)
-        map?.animateCamera(
-            CameraUpdateFactory
-                .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
-        )
     }
+
+
 
     private fun checkHasInternetConnection(): Boolean {
         val mainActivity = activity as MainActivity
