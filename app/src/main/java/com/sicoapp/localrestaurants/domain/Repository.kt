@@ -1,5 +1,6 @@
 package com.sicoapp.localrestaurants.domain
 
+import androidx.lifecycle.LiveData
 import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
 import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
@@ -36,4 +37,8 @@ class Repository
                 }
             }
     }
+
+
+    fun getRestaurants() = databaseDataSource.getRestaurant()
+
 }

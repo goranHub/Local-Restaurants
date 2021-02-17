@@ -8,11 +8,10 @@ import androidx.lifecycle.ViewModel
 import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.domain.Repository
 import com.sicoapp.localrestaurants.utils.livedata.Resource
-import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 
 class MapViewModel
 @ViewModelInject constructor(
@@ -21,10 +20,10 @@ class MapViewModel
 
     val restaurantData: LiveData<Resource<List<Restaurant>>> get() = _restaurantData
     private val _restaurantData = MutableLiveData<Resource<List<Restaurant>>>()
-    private val compositeDisposable = CompositeDisposable()
 
     init {
-        getRestraurants()
+        repository.fetchRestaurants()
+        getFromDB()
     }
 
     @SuppressLint("CheckResult")
@@ -39,21 +38,14 @@ class MapViewModel
                 },
                 {
                     val message = it.localizedMessage ?: ""
-                    _restaurantData.value = Resource.error(message, null)
                 },
                 {
-
                 },
                 {
-                    compositeDisposable.add(it)
-                    _restaurantData.value = Resource.loading(null)
                 }
             )
     }
 
+    fun getFromDB()= repository.getRestaurants()
 
-    override fun onCleared() {
-        super.onCleared()
-        compositeDisposable.clear()
-    }
 }

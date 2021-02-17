@@ -1,5 +1,6 @@
 package com.sicoapp.localrestaurants.ui.map
 
+import android.media.Rating
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,9 +20,13 @@ import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
 import com.sicoapp.localrestaurants.utils.DialogWithData
 import com.sicoapp.localrestaurants.utils.ListenerSubmitData
-import com.sicoapp.localrestaurants.utils.hasInternetConnection
 import com.sicoapp.localrestaurants.utils.livedata.Status
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.Single
+import io.reactivex.SingleObserver
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 
 
@@ -53,7 +58,12 @@ class MapFragmentHome :
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
 
-        Timber.d("${map.toString()} 11 ")
+        Timber.d(" 1 ")
+
+        Timber.d(" 2 ")
+
+        //observeRestaurantData(map)
+        observeRestaurantDataFromDB(map)
 
         map?.uiSettings?.isZoomControlsEnabled = true
         map?.uiSettings?.isMyLocationButtonEnabled = true
@@ -64,14 +74,10 @@ class MapFragmentHome :
                 .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
         )
 
-        Timber.d("${map.toString()} 222 ")
-
-        observeRestaurantData(map)
-
-        Timber.d("${map.toString()} 333 ")
-
-
+        Timber.d( "3")
     }
+
+
     override fun onMarkerClick(marker: Marker): Boolean {
 
         item = listReasturant!!.first { it.name == marker.title }
@@ -87,17 +93,19 @@ class MapFragmentHome :
         }
         return true
     }
+
+
     private fun observeRestaurantData(map : GoogleMap?) {
-        Timber.d("${map} 44 ")
+        Timber.d(" 4 ")
         viewModel
             .restaurantData
             .observe(viewLifecycleOwner, { resource ->
                 when(resource.status){
                     Status.SUCCESS -> {
                         listReasturant = resource.data
-                        Timber.d("${listReasturant.toString()} 55 ")
+                        Timber.d(" 5 ")
                         listReasturant?.map {
-                            Timber.d("${it} 66 ")
+                            Timber.d(" 6 ")
                             map?.addMarker(
                                 MarkerOptions()
                                     .position(LatLng(it.latitude.toDouble(),
@@ -107,11 +115,11 @@ class MapFragmentHome :
                         }
                     }
                     Status.LOADING -> {
-                        Timber.d("${ Status.LOADING.toString()} 77 ")
+                        Timber.d(" 77 ")
                         showLoading()
                     }
                     Status.ERROR -> {
-                        Timber.d("${ Status.ERROR.toString()} 88 ")
+                        Timber.d(" 88 ")
                         hideLoading()
                     }
                 }
@@ -119,13 +127,37 @@ class MapFragmentHome :
         )
     }
 
+    private fun observeRestaurantDataFromDB(map : GoogleMap?) {
+        Timber.d(" 4 ")
+        viewModel
+            .getFromDB()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                object : SingleObserver<List<Restaurant>> {
 
+                    override fun onSubscribe(d: Disposable) {
+                    }
 
-    private fun checkHasInternetConnection(): Boolean {
-        val mainActivity = activity as MainActivity
-        mainActivity.checkInternetConnection()
-        return hasInternetConnection(mainActivity)
+                    override fun onSuccess(it: List<Restaurant>) {
+                        listReasturant = it
+                        listReasturant!!.map {
+                            Timber.d(" 6 ")
+                            map?.addMarker(
+                                MarkerOptions()
+                                    .position(LatLng(it.latitude.toDouble(),
+                                        it.longitude.toDouble()))
+                                    .title(it.name)
+                            )
+                        }
+                    }
+
+                    override fun onError(e: Throwable) {
+                    }
+                })
     }
+
+
 
     private fun showLoading() {
         binding!!.progressBar.visibility = View.VISIBLE
