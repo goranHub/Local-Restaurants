@@ -1,6 +1,5 @@
 package com.sicoapp.localrestaurants.ui.map
 
-import android.media.Rating
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +13,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.sicoapp.localrestaurants.BaseActivity
-import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
@@ -22,7 +20,6 @@ import com.sicoapp.localrestaurants.utils.DialogWithData
 import com.sicoapp.localrestaurants.utils.ListenerSubmitData
 import com.sicoapp.localrestaurants.utils.livedata.Status
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -62,8 +59,7 @@ class MapFragmentHome :
 
         Timber.d(" 2 ")
 
-        //observeRestaurantData(map)
-        observeRestaurantDataFromDB(map)
+        observeRestaurantData(map)
 
         map?.uiSettings?.isZoomControlsEnabled = true
         map?.uiSettings?.isMyLocationButtonEnabled = true
@@ -85,17 +81,43 @@ class MapFragmentHome :
         dialog.show(requireActivity().supportFragmentManager, dialog.tag)
 
         dialog.listener = object : ListenerSubmitData{
-            override fun onSubmitData(name: String) {
-                item.name = name
-                dialog = DialogWithData(item)
-                dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+
+            override fun onSubmitData(name: String, type :String) {
+
+                if (type == "latitude"){
+                    item.latitude = name
+                    viewModel.saveRestaurants(item)
+                    dialog = DialogWithData(item)
+                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                }
+
+                if (type == "longitude"){
+                    item.longitude = name
+                    viewModel.saveRestaurants(item)
+                    dialog = DialogWithData(item)
+                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                }
+
+                if (type == "address"){
+                    item.address = name
+                    viewModel.saveRestaurants(item)
+                    dialog = DialogWithData(item)
+                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                }
+
+                if (type == "name"){
+                    item.name = name
+                    viewModel.saveRestaurants(item)
+                    dialog = DialogWithData(item)
+                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                }
             }
         }
         return true
     }
 
 
-    private fun observeRestaurantData(map : GoogleMap?) {
+    private fun observeDataFromNetwork(map : GoogleMap?) {
         Timber.d(" 4 ")
         viewModel
             .restaurantData
@@ -127,7 +149,7 @@ class MapFragmentHome :
         )
     }
 
-    private fun observeRestaurantDataFromDB(map : GoogleMap?) {
+    private fun observeRestaurantData(map : GoogleMap?) {
         Timber.d(" 4 ")
         viewModel
             .getFromDB()
@@ -135,23 +157,26 @@ class MapFragmentHome :
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 object : SingleObserver<List<Restaurant>> {
-
                     override fun onSubscribe(d: Disposable) {
                     }
-
                     override fun onSuccess(it: List<Restaurant>) {
-                        listReasturant = it
-                        listReasturant!!.map {
-                            Timber.d(" 6 ")
-                            map?.addMarker(
-                                MarkerOptions()
-                                    .position(LatLng(it.latitude.toDouble(),
-                                        it.longitude.toDouble()))
-                                    .title(it.name)
-                            )
+                        if (it.size < 100){
+                            observeDataFromNetwork(map)
+                        }else
+                        {
+                            listReasturant = it
+                            listReasturant!!.map {
+                                Timber.d(" 6 ")
+                                map?.addMarker(
+                                    MarkerOptions()
+                                        .position(LatLng(it.latitude.toDouble(),
+                                            it.longitude.toDouble()))
+                                        .title(it.name)
+                                )
+                            }
                         }
-                    }
 
+                    }
                     override fun onError(e: Throwable) {
                     }
                 })
@@ -160,11 +185,11 @@ class MapFragmentHome :
 
 
     private fun showLoading() {
-        binding!!.progressBar.visibility = View.VISIBLE
+        binding?.progressBar?.visibility = View.VISIBLE
     }
 
     private fun hideLoading() {
-        binding!!.progressBar.visibility = View.GONE
+        binding?.progressBar?.visibility = View.GONE
     }
 
     override fun setBinding(

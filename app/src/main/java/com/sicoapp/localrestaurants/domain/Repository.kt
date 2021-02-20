@@ -41,4 +41,6 @@ class Repository
 
     fun getRestaurants() = databaseDataSource.getRestaurant()
 
+    fun saveRestaurants(restaurant : Restaurant) = databaseDataSource.saveRestaurants(restaurant)
+
 }

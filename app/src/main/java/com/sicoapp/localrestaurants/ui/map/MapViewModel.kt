@@ -22,8 +22,7 @@ class MapViewModel
     private val _restaurantData = MutableLiveData<Resource<List<Restaurant>>>()
 
     init {
-        repository.fetchRestaurants()
-        getFromDB()
+        getRestraurants()
     }
 
     @SuppressLint("CheckResult")
@@ -47,5 +46,7 @@ class MapViewModel
     }
 
     fun getFromDB()= repository.getRestaurants()
+
+    fun saveRestaurants(restaurant : Restaurant)= repository.saveRestaurants(restaurant)
 
 }

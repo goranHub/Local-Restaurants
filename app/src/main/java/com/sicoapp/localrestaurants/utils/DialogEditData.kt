@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.fragment_dialog_edit_data.view.*
  * @author ll4
  * @date 2/6/2021
  */
-class DialogEditData(val name : String, private val listener : ListenerSubmitData?) : DialogFragment()  {
+class DialogEditData(val name : String, private val listener : ListenerSubmitData?, private val type: String) : DialogFragment()  {
 
     private lateinit var tv : EditText
 
@@ -49,12 +49,12 @@ class DialogEditData(val name : String, private val listener : ListenerSubmitDat
     private fun setupClickListeners(view: View) {
         view.btnSubmit.setOnClickListener {
             val text = tv.text.toString()
-            listener?.onSubmitData(text)
+            listener?.onSubmitData(text, type)
             dismiss()
         }
     }
 }
 
 interface ListenerSubmitData {
-    fun onSubmitData(name : String)
+    fun onSubmitData(name : String, type: String)
 }

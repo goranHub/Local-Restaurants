@@ -13,16 +13,18 @@ import kotlinx.android.parcel.Parcelize
 @Entity
 @Parcelize
 data class Restaurant(
+
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "address")
-    val address: String,
+    var address: String,
 
     @ColumnInfo(name = "latitude")
-    val latitude: String,
+    var latitude: String,
 
     @ColumnInfo(name = "longitude")
-    val longitude: String,
+    var longitude: String,
 
     @ColumnInfo(name = "name")
     var name: String
+
 ) : Parcelable

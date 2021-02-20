@@ -26,7 +26,7 @@ class DialogWithData(private val restaurant: Restaurant) : DialogFragment() {
 
         val v = inflater.inflate(R.layout.fragment_diralog_with_data, container, false)
 
-        val btTitle = v.findViewById<Button>(R.id.bt_title)
+        val btTitle = v.findViewById<Button>(R.id.bt_name)
         val btAddress = v.findViewById<Button>(R.id.bt_address)
         val btLongitude = v.findViewById<Button>(R.id.bt_longitude)
         val btLatitude = v.findViewById<Button>(R.id.bt_latitude)
@@ -58,28 +58,28 @@ class DialogWithData(private val restaurant: Restaurant) : DialogFragment() {
 
     private fun setupClickListenersLatitude(view: View) {
         view.bt_latitude.setOnClickListener {
-            val dialog = DialogEditData(restaurant.latitude.toString(), listener)
+            val dialog = DialogEditData(restaurant.latitude, listener, "latitude")
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
 
     private fun setupClickListenersLongitude(view: View) {
         view.bt_longitude.setOnClickListener {
-            val dialog = DialogEditData(restaurant.longitude.toString(), listener)
+            val dialog = DialogEditData(restaurant.longitude, listener, "longitude")
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
 
     private fun setupClickListenersAddress(view: View) {
         view.bt_address.setOnClickListener {
-            val dialog = DialogEditData(restaurant.address, listener)
+            val dialog = DialogEditData(restaurant.address, listener, "address")
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
 
     private fun setupClickListenersTitle(view: View) {
-        view.bt_title.setOnClickListener {
-            val dialog = DialogEditData(restaurant.name, listener)
+        view.bt_name.setOnClickListener {
+            val dialog = DialogEditData(restaurant.name, listener, "name")
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
         }
     }
