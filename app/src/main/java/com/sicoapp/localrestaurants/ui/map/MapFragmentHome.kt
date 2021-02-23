@@ -16,6 +16,7 @@ import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
+import com.sicoapp.localrestaurants.utils.DialogEditData
 import com.sicoapp.localrestaurants.utils.DialogWithData
 import com.sicoapp.localrestaurants.utils.ListenerSubmitData
 import com.sicoapp.localrestaurants.utils.livedata.Status
@@ -70,46 +71,97 @@ class MapFragmentHome :
                 .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
         )
 
-        Timber.d( "3")
+        Timber.d("3")
     }
 
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
         item = listReasturant!!.first { it.name == marker.title }
-        var dialog = DialogWithData(item)
-        dialog.show(requireActivity().supportFragmentManager, dialog.tag)
 
-        dialog.listener = object : ListenerSubmitData{
+        val dialogWithData = DialogWithData(item)
 
-            override fun onSubmitData(name: String, type :String) {
+        dialogWithData.show(requireActivity().supportFragmentManager, dialogWithData.tag)
 
-                if (type == "latitude"){
-                    item.latitude = name
-                    viewModel.saveRestaurants(item)
-                    dialog = DialogWithData(item)
-                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+        dialogWithData.listener = object : DialogWithData.ListenerClicked {
+
+            override fun onButton(type: String) {
+
+                if (type == "latitude") {
+                    val restaurant = dialogWithData.restaurant
+                    val dialogEdit = DialogEditData(restaurant.latitude)
+
+                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
+                    dialogEdit.listener = object : ListenerSubmitData {
+                        override fun onSubmitData(submitData: String) {
+                            item.latitude = submitData
+                            viewModel.update(item)
+
+                            val dialog = DialogWithData(item)
+                            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+
+                            dialogEdit.dismiss()
+                            dialogWithData.dismiss()
+
+                        }
+                    }
                 }
 
-                if (type == "longitude"){
-                    item.longitude = name
-                    viewModel.saveRestaurants(item)
-                    dialog = DialogWithData(item)
-                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                if (type == "longitude") {
+                    val restaurant = dialogWithData.restaurant
+                    val dialogEdit = DialogEditData(restaurant.longitude)
+
+                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
+                    dialogEdit.listener = object : ListenerSubmitData {
+                        override fun onSubmitData(submitData: String) {
+                            item.longitude = submitData
+                            viewModel.update(item)
+
+                            val dialog = DialogWithData(item)
+                            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+
+                            dialogEdit.dismiss()
+                            dialogWithData.dismiss()
+                        }
+                    }
                 }
 
-                if (type == "address"){
-                    item.address = name
-                    viewModel.saveRestaurants(item)
-                    dialog = DialogWithData(item)
-                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                if (type == "address") {
+                    val restaurant = dialogWithData.restaurant
+                    val dialogEdit = DialogEditData(restaurant.address)
+
+                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
+                    dialogEdit.listener = object : ListenerSubmitData {
+                        override fun onSubmitData(submitData: String) {
+                            item.address = submitData
+                            viewModel.update(item)
+
+                            val dialog = DialogWithData(item)
+                            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+
+                            dialogEdit.dismiss()
+                            dialogWithData.dismiss()
+                        }
+                    }
                 }
 
-                if (type == "name"){
-                    item.name = name
-                    viewModel.saveRestaurants(item)
-                    dialog = DialogWithData(item)
-                    dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+                if (type == "name") {
+                    val restaurant = dialogWithData.restaurant
+                    val dialogEdit = DialogEditData(restaurant.name)
+
+                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
+                    dialogEdit.listener = object : ListenerSubmitData {
+                        override fun onSubmitData(submitData: String) {
+                            item.name = submitData
+                            viewModel.update(item)
+
+                            val dialog = DialogWithData(item)
+                            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+
+                            dialogEdit.dismiss()
+                            dialogWithData.dismiss()
+                        }
+                    }
                 }
             }
         }
@@ -117,12 +169,12 @@ class MapFragmentHome :
     }
 
 
-    private fun observeDataFromNetwork(map : GoogleMap?) {
+    private fun observeDataFromNetwork(map: GoogleMap?) {
         Timber.d(" 4 ")
         viewModel
             .restaurantData
             .observe(viewLifecycleOwner, { resource ->
-                when(resource.status){
+                when (resource.status) {
                     Status.SUCCESS -> {
                         listReasturant = resource.data
                         Timber.d(" 5 ")
@@ -130,8 +182,12 @@ class MapFragmentHome :
                             Timber.d(" 6 ")
                             map?.addMarker(
                                 MarkerOptions()
-                                    .position(LatLng(it.latitude.toDouble(),
-                                        it.longitude.toDouble()))
+                                    .position(
+                                        LatLng(
+                                            it.latitude.toDouble(),
+                                            it.longitude.toDouble()
+                                        )
+                                    )
                                     .title(it.name)
                             )
                         }
@@ -146,10 +202,10 @@ class MapFragmentHome :
                     }
                 }
             }
-        )
+            )
     }
 
-    private fun observeRestaurantData(map : GoogleMap?) {
+    private fun observeRestaurantData(map: GoogleMap?) {
         Timber.d(" 4 ")
         viewModel
             .getFromDB()
@@ -160,28 +216,29 @@ class MapFragmentHome :
                     override fun onSubscribe(d: Disposable) {
                     }
                     override fun onSuccess(it: List<Restaurant>) {
-                        if (it.size < 100){
+                        if (it.size < 100) {
                             observeDataFromNetwork(map)
-                        }else
-                        {
+                        } else {
                             listReasturant = it
                             listReasturant!!.map {
                                 Timber.d(" 6 ")
                                 map?.addMarker(
                                     MarkerOptions()
-                                        .position(LatLng(it.latitude.toDouble(),
-                                            it.longitude.toDouble()))
+                                        .position(
+                                            LatLng(
+                                                it.latitude.toDouble(),
+                                                it.longitude.toDouble()
+                                            )
+                                        )
                                         .title(it.name)
                                 )
                             }
                         }
-
                     }
                     override fun onError(e: Throwable) {
                     }
                 })
     }
-
 
 
     private fun showLoading() {

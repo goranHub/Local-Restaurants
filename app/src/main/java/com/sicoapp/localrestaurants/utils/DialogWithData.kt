@@ -13,9 +13,10 @@ import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.local.Restaurant
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
-class DialogWithData(private val restaurant: Restaurant) : DialogFragment() {
+class DialogWithData(val restaurant: Restaurant) : DialogFragment() {
 
-    var listener : ListenerSubmitData? = null
+    var listener : ListenerClicked? = null
+
 
 
     override fun onCreateView(
@@ -56,40 +57,49 @@ class DialogWithData(private val restaurant: Restaurant) : DialogFragment() {
         setupClickListenersLatitude(view)
     }
 
+
     private fun setupClickListenersLatitude(view: View) {
         view.bt_latitude.setOnClickListener {
-            val dialog = DialogEditData(restaurant.latitude, listener, "latitude")
+            val dialog = DialogEditData(restaurant.latitude)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+            listener?.onButton("latitude")
         }
     }
 
     private fun setupClickListenersLongitude(view: View) {
         view.bt_longitude.setOnClickListener {
-            val dialog = DialogEditData(restaurant.longitude, listener, "longitude")
+            val dialog = DialogEditData(restaurant.longitude)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+            listener?.onButton("longitude")
         }
     }
 
     private fun setupClickListenersAddress(view: View) {
         view.bt_address.setOnClickListener {
-            val dialog = DialogEditData(restaurant.address, listener, "address")
-            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+            listener?.onButton("address")
         }
     }
 
     private fun setupClickListenersTitle(view: View) {
         view.bt_name.setOnClickListener {
-            val dialog = DialogEditData(restaurant.name, listener, "name")
+            val dialog = DialogEditData(restaurant.name)
             dialog.show(requireActivity().supportFragmentManager, dialog.tag)
+            listener?.onButton("name")
         }
     }
 
     private fun setupClickListenersClose(view: View) {
         view.bt_close.setOnClickListener {
+            listener?.onButton("close")
+            dialog?.dismiss()
             dismiss()
         }
     }
 
+
+    interface ListenerClicked {
+        fun onButton(type: String)
+    }
 
 
 }

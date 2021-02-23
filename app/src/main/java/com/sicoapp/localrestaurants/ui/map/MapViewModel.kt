@@ -49,4 +49,6 @@ class MapViewModel
 
     fun saveRestaurants(restaurant : Restaurant)= repository.saveRestaurants(restaurant)
 
+    fun update(restaurant: Restaurant) = repository.update(restaurant)
+
 }
