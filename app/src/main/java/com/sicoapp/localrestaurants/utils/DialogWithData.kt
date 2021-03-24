@@ -31,6 +31,7 @@ class DialogWithData(val restaurant: Restaurant) : DialogFragment() {
         val btAddress = v.findViewById<Button>(R.id.bt_address)
         val btLongitude = v.findViewById<Button>(R.id.bt_longitude)
         val btLatitude = v.findViewById<Button>(R.id.bt_latitude)
+        val btPhoto = v.findViewById<Button>(R.id.bt_photo)
 
         btTitle.text = restaurant.name
         btAddress.text = restaurant.address
@@ -55,21 +56,18 @@ class DialogWithData(val restaurant: Restaurant) : DialogFragment() {
         setupClickListenersAddress(view)
         setupClickListenersLongitude(view)
         setupClickListenersLatitude(view)
+        setupClickListenersPhoto(view)
     }
 
 
     private fun setupClickListenersLatitude(view: View) {
         view.bt_latitude.setOnClickListener {
-            val dialog = DialogEditData(restaurant.latitude)
-            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
             listener?.onButton("latitude")
         }
     }
 
     private fun setupClickListenersLongitude(view: View) {
         view.bt_longitude.setOnClickListener {
-            val dialog = DialogEditData(restaurant.longitude)
-            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
             listener?.onButton("longitude")
         }
     }
@@ -82,9 +80,13 @@ class DialogWithData(val restaurant: Restaurant) : DialogFragment() {
 
     private fun setupClickListenersTitle(view: View) {
         view.bt_name.setOnClickListener {
-            val dialog = DialogEditData(restaurant.name)
-            dialog.show(requireActivity().supportFragmentManager, dialog.tag)
             listener?.onButton("name")
+        }
+    }
+
+    private fun setupClickListenersPhoto(view: View) {
+        view.bt_photo.setOnClickListener {
+            listener?.onButton("photo")
         }
     }
 

@@ -9,9 +9,7 @@ import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.domain.Repository
 import com.sicoapp.localrestaurants.utils.livedata.Resource
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import timber.log.Timber
 
 class MapViewModel
 @ViewModelInject constructor(
@@ -22,27 +20,17 @@ class MapViewModel
     private val _restaurantData = MutableLiveData<Resource<List<Restaurant>>>()
 
     init {
-        getRestraurants()
+        getRestaurants()
     }
 
     @SuppressLint("CheckResult")
-    fun getRestraurants() {
+    fun getRestaurants() {
         repository.fetchRestaurants()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    _restaurantData.value = Resource.success(it)
-
-                },
-                {
-                    val message = it.localizedMessage ?: ""
-                },
-                {
-                },
-                {
-                }
-            )
+            .subscribe {
+                _restaurantData.value = Resource.success(it)
+            }
     }
 
     fun getFromDB()= repository.getRestaurants()

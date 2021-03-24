@@ -63,6 +63,18 @@
             android:text="please_wait" />
 
         <Button
+            android:id="@+id/bt_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/quantum_cyan400"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bt_longitude"
+            android:text="Take Photo" />
+
+        <Button
             android:id="@+id/bt_close"
             android:layout_width="wrap_content"
             android:layout_height="40dp"

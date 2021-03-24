@@ -9,3 +9,4 @@ const val BASE_URL = "https://www.mocky.io/v2/"
 const val KEY_RATING = "KEY_RATING"
 const val KEY_NAME = "KEY_NAME"
 const val SHARED_PREFERENCES_NAME = "sharedPref"
+const val  CAMERA_PIC_REQUEST = 1337

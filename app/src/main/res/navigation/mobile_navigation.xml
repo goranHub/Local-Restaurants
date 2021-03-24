@@ -10,7 +10,11 @@
         android:id="@+id/nav_map"
         android:name="com.sicoapp.localrestaurants.ui.map.MapFragmentHome"
         android:label="@string/menu_map"
-        tools:layout="@layout/fragment_map_home" />
+        tools:layout="@layout/fragment_map_home" >
+        <action
+            android:id="@+id/action_nav_map_to_restaurantPhotoFragment"
+            app:destination="@id/restaurantPhotoFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_home"
@@ -23,4 +27,8 @@
         android:name="com.sicoapp.localrestaurants.ui.favorit.FavoritFragment"
         android:label="@string/menu_favorit"
         tools:layout="@layout/fragment_slideshow" />
+    <fragment
+        android:id="@+id/restaurantPhotoFragment"
+        android:name="com.sicoapp.localrestaurants.ui.photo.RestaurantPhotoFragment"
+        android:label="RestaurantPhotoFragment" />
 </navigation>
