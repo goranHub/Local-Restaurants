@@ -19,23 +19,25 @@ class DatabaseDataSource @Inject constructor(
 
     fun getRestaurant() = databaseDao.getAll()
 
-    private val mObserverSubject = PublishSubject.create<DatabaseEvent<Restaurant>>()
+    fun getRestaurantSingle() = databaseDao.getAllSingle()
+
+    private val mObserverSubject = PublishSubject.create<DatabaseEvent<RestaurantEntity>>()
 
 
-/*    fun saveRestaurants(restaurant: Restaurant): Completable? {
+/*    fun saveRestaurants(restaurant: RestaurantEntity): Completable? {
         val insertEvent = DatabaseEvent(DatabaseEventType.INSERTED, restaurant)
         return databaseDao.insertRestaurant(restaurant)
             .doOnComplete { mObserverSubject.onNext(insertEvent) }
     }*/
 
-    fun saveRestaurants(restaurant: Restaurant) {
+    fun saveRestaurants(restaurant: RestaurantEntity) {
         val observable = Observable.just(restaurant)
         observable.subscribeOn(Schedulers.io())
-            .subscribe(object : Observer<Restaurant?> {
+            .subscribe(object : Observer<RestaurantEntity?> {
                 override fun onSubscribe(d: Disposable) {
                 }
 
-                override fun onNext(restaurant: Restaurant) {
+                override fun onNext(restaurant: RestaurantEntity) {
                     databaseDao.insertAll(restaurant)
                 }
 
@@ -49,14 +51,14 @@ class DatabaseDataSource @Inject constructor(
     }
 
 
-    fun updateRestaurants(restaurant: Restaurant) {
+    fun updateRestaurants(restaurant: RestaurantEntity) {
         val observable = Observable.just(restaurant)
         observable.subscribeOn(Schedulers.io())
-            .subscribe(object : Observer<Restaurant?> {
+            .subscribe(object : Observer<RestaurantEntity?> {
                 override fun onSubscribe(d: Disposable) {
                 }
 
-                override fun onNext(restaurant: Restaurant) {
+                override fun onNext(restaurant: RestaurantEntity) {
                     databaseDao.updateRestaurant(restaurant)
                 }
 
@@ -70,14 +72,14 @@ class DatabaseDataSource @Inject constructor(
     }
 
 
-/*    fun updateRestaurants(restaurant: Restaurant): Completable {
+/*    fun updateRestaurants(restaurant: RestaurantEntity): Completable {
         val updateEvent = DatabaseEvent(DatabaseEventType.UPDATED, restaurant)
         return databaseDao.updateRestaurant(restaurant)
             .doOnComplete { mObserverSubject.onNext(updateEvent) }
     }*/
 
 /*    @SuppressLint("CheckResult")
-    fun updateRestaurants(restaurant: Restaurant) {
+    fun updateRestaurants(restaurant: RestaurantEntity) {
         val observable = Observable.just(restaurant)
         observable.subscribeOn(Schedulers.io())
             .subscribe{
@@ -85,7 +87,7 @@ class DatabaseDataSource @Inject constructor(
             }
     }*/
 
-    fun deleteTask(restaurant: Restaurant): Completable {
+    fun deleteTask(restaurant: RestaurantEntity): Completable {
         val deleteEvent = DatabaseEvent(DatabaseEventType.REMOVED, restaurant)
         return databaseDao.deleteRestaurant(restaurant)
             .doOnComplete { mObserverSubject.onNext(deleteEvent) }

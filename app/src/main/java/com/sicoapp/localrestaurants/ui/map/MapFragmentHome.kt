@@ -1,7 +1,5 @@
 package com.sicoapp.localrestaurants.ui.map
 
-import android.R.attr
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -10,9 +8,10 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -21,20 +20,23 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.jakewharton.rxbinding4.view.clicks
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.R
-import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.databinding.FragmentRestaurantPhotoBinding
+import com.sicoapp.localrestaurants.domain.Restraurant
 import com.sicoapp.localrestaurants.ui.BaseFR
-import com.sicoapp.localrestaurants.ui.photo.BindMyProfile
-import com.sicoapp.localrestaurants.utils.*
+import com.sicoapp.localrestaurants.utils.CAMERA_PIC_REQUEST
 import com.sicoapp.localrestaurants.utils.livedata.Status
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_diralog_with_data.*
 import timber.log.Timber
 
 
@@ -45,12 +47,14 @@ class MapFragmentHome :
 
     private val viewModel: MapViewModel by viewModels()
     private lateinit var mMapView: MapView
-    private var listRestaurant: List<Restaurant>? = null
-    private lateinit var item: Restaurant
+    private var listRestaurant: List<Restraurant>? = null
+    private lateinit var item: Restraurant
     override var binding: FragmentMapHomeBinding? = null
     private var map: GoogleMap? = null
     var selectedImageUri: Uri? = null
     private lateinit var bindingRes: FragmentRestaurantPhotoBinding
+    private val disposables = CompositeDisposable()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,6 +72,7 @@ class MapFragmentHome :
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
         observeRestaurantData(map)
+        //observeRestaurantLiveData(map)
 
         Timber.d(" 1 ")
 
@@ -110,7 +115,6 @@ class MapFragmentHome :
                             viewModel.update(item)
                             dialogEdit.dismiss()
                             dialogWithData.dismiss()
-
                         }
                     }
                 }
@@ -130,6 +134,27 @@ class MapFragmentHome :
                         }
                     }
                 }
+
+
+                bt_address.clicks().subscribe {
+                    viewModel.addClicked()
+                }.addTo(disposables)
+
+                viewModel.showDialogWithData.observe(viewLifecycleOwner, Observer {
+                    val restaurant = dialogWithData.restaurant
+                    val dialogEdit = DialogEditData(restaurant.address)
+
+                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
+                    dialogEdit.listener = object : ListenerSubmitData {
+                        override fun onSubmitData(submitData: String) {
+                            item.address = submitData
+                            Timber.d(" update address")
+                            viewModel.update(item)
+                            dialogEdit.dismiss()
+                            dialogWithData.dismiss()
+                        }
+                    }
+                })
 
                 if (type == "address") {
                     val restaurant = dialogWithData.restaurant
@@ -196,19 +221,19 @@ class MapFragmentHome :
     }
 
     private fun imageChooser() {
-        val cameraIntent  = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         this.startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST)
     }
 
-
-    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
-        super.startActivityForResult(intent, requestCode)
-        if (requestCode ==  CAMERA_PIC_REQUEST
-            && intent!!.data != null
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CAMERA_PIC_REQUEST
+            && data != null
         ) {
-            selectedImageUri = intent.data
-            BindMyProfile().image = selectedImageUri.toString()
-            findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment)
+            selectedImageUri = data.data
+
+            val photo = bundleOf("photo" to selectedImageUri.toString())
+            findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
         }
     }
 
@@ -245,23 +270,44 @@ class MapFragmentHome :
                         hideLoading()
                     }
                 }
+            })
+    }
+
+    private fun observeRestaurantLiveData(map: GoogleMap?) {
+        Timber.d(" observeRestaurantData 4 ")
+        viewModel.restraurantsFormDBLiveData.observe(viewLifecycleOwner, {
+
+            it.map {
+                map?.addMarker(
+                    MarkerOptions()
+                        .position(
+                            LatLng(
+                                it.latitude.toDouble(),
+                                it.longitude.toDouble()
+                            )
+                        )
+                        .title(it.name)
+                )
             }
-            )
+        })
     }
 
     private fun observeRestaurantData(map: GoogleMap?) {
         Timber.d(" observeRestaurantData 4 ")
         viewModel
-            .getFromDB()
+            .getFromDB().doOnSubscribe {
+                Timber.d(" doOnSubscribe getFromDB")
+            }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                object : SingleObserver<List<Restaurant>> {
+
+                object : SingleObserver<List<Restraurant>> {
                     override fun onSubscribe(d: Disposable) {
+                        Timber.d(" Disposable ")
                     }
 
-                    override fun onSuccess(it: List<Restaurant>) {
-
+                    override fun onSuccess(it: List<Restraurant>) {
                         if (it.size < 100) {
                             observeDataFromNetwork(map)
                             Timber.d(" observeDataFromNetwork init ")
@@ -269,7 +315,6 @@ class MapFragmentHome :
                             it.map {
                                 viewModel.saveRestaurants(it)
                             }
-                            Timber.d(" saveRestaurants in DB 6 ")
 
                         } else {
                             listRestaurant = it
@@ -290,9 +335,11 @@ class MapFragmentHome :
                     }
 
                     override fun onError(e: Throwable) {
+                        Timber.d(" Throwable ")
                     }
                 })
     }
+
 
     private fun showLoading() {
         binding?.progressBar?.visibility = View.VISIBLE
