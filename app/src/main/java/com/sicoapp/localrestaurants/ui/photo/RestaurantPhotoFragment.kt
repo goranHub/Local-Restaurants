@@ -1,6 +1,7 @@
 package com.sicoapp.localrestaurants.ui.photo
 
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,15 @@ import com.sicoapp.localrestaurants.databinding.FragmentRestaurantPhotoBinding
 class RestaurantPhotoFragment : Fragment() {
 
     lateinit var binding : FragmentRestaurantPhotoBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        arguments?.getString(MediaStore.ACTION_IMAGE_CAPTURE, "1")?.let {
+            BindMyProfile().image = it
+        }
+
+    }
 
 
     override fun onCreateView(

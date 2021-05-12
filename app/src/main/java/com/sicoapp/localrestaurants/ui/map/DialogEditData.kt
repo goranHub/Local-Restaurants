@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.utils
+package com.sicoapp.localrestaurants.ui.map
 
 import android.os.Bundle
 import android.text.Editable

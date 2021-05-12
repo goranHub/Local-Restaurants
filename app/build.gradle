@@ -128,6 +128,13 @@ dependencies {
     // This is for getting the location
     implementation 'com.google.android.gms:play-services-location:17.1.0'
 
+    implementation "io.reactivex.rxjava3:rxkotlin:3.0.0"
+    implementation "io.reactivex.rxjava3:rxandroid:3.0.0"
+    implementation "com.github.akarnokd:rxjava3-bridge:3.0.0"
+    implementation 'com.jakewharton.rxbinding4:rxbinding:4.0.0'
+    implementation "android.arch.lifecycle:reactivestreams:1.1.1"
+
+
     kapt "com.android.databinding:compiler:3.4.0"
 
 

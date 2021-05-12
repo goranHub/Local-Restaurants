@@ -1,11 +1,12 @@
 package com.sicoapp.localrestaurants.domain
 
-import androidx.lifecycle.LiveData
 import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
-import com.sicoapp.localrestaurants.data.local.Restaurant
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
-import com.sicoapp.localrestaurants.domain.mappers.mapToRestaurant
-import io.reactivex.Observable
+import com.sicoapp.localrestaurants.domain.mappers.DataMapper
+import com.sicoapp.localrestaurants.domain.mappers.mapToRestaurantEntity
+import com.sicoapp.localrestaurants.utils.toV3Observable
+import io.reactivex.Flowable
+import io.reactivex.rxjava3.core.Observable
 import javax.inject.Inject
 
 /**
@@ -22,28 +23,35 @@ class Repository
     /**
      * save from network in database
      */
-    fun fetchRestaurants(): Observable<List<Restaurant>> {
+    fun getRestaurantsFromNetAndSaveIntoDB(): Observable<List<Restraurant>> {
         return networkDataSource
             .fetchRestaurants()
-            .toObservable()
-            .map {
-                it.mapToRestaurant()
-            }
+            .toObservable().toV3Observable()
             .doOnNext {
                 it?.let { list ->
-                    list.forEach {
+                    list.mapToRestaurantEntity().map {
                         databaseDataSource.saveRestaurants(it)
                     }
                 }
             }
     }
 
+    fun getRestaurantsDB(): Flowable<List<Restraurant>> {
+        return databaseDataSource.getRestaurant().map {
+            DataMapper.mapEntitiesToDomain(it)
+        }
+    }
 
+    fun getRestaurantSingle() = databaseDataSource.getRestaurantSingle().map {
+        DataMapper.mapEntitiesToDomain(it)
+    }
 
-    fun getRestaurants() = databaseDataSource.getRestaurant()
+    fun saveRestaurants(restaurant: Restraurant) {
+        databaseDataSource.saveRestaurants(DataMapper.mapToSingleRestaurantEntity(restaurant))
+    }
 
-    fun saveRestaurants(restaurant : Restaurant) = databaseDataSource.saveRestaurants(restaurant)
-
-    fun update(restaurant: Restaurant) = databaseDataSource.updateRestaurants(restaurant)
+    fun update(restaurant: Restraurant) {
+        databaseDataSource.updateRestaurants(DataMapper.mapToSingleRestaurantEntity(restaurant))
+    }
 
 }

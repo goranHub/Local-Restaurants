@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.utils
+package com.sicoapp.localrestaurants.ui.map
 
 
 
@@ -10,14 +10,16 @@ import android.view.WindowManager
 import android.widget.Button
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
-import com.sicoapp.localrestaurants.data.local.Restaurant
+import com.sicoapp.localrestaurants.domain.Restraurant
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
-class DialogWithData(val restaurant: Restaurant) : DialogFragment() {
+class DialogWithData() : DialogFragment() {
 
     var listener : ListenerClicked? = null
-
-
+    lateinit var viewModel : MapViewModel
+     val disposables = CompositeDisposable()
+    lateinit var restaurant: Restraurant
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,6 +75,9 @@ class DialogWithData(val restaurant: Restaurant) : DialogFragment() {
     }
 
     private fun setupClickListenersAddress(view: View) {
+ /*       bt_address.clicks().subscribe {
+            viewModel.addClicked()
+        }.addTo(disposables)*/
         view.bt_address.setOnClickListener {
             listener?.onButton("address")
         }

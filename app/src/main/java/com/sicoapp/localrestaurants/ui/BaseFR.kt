@@ -48,7 +48,7 @@ abstract class BaseFR <T : ViewBinding, A : Any> : Fragment() {
 
     open fun alertDialog(name: String) {
         val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("Restaurant")
+        builder.setTitle("RestaurantEntity")
         builder.setMessage(name)
         //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 

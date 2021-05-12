@@ -10,9 +10,8 @@
     <string name="details">Details</string>
     <string name="menu_map">Restaurant Map</string>
     <string name="menu_favorit">Favorit</string>
-    <string name="google_maps_api_key">AIzaSyBdMGSJwYlzdmbsxjqmf2IqT6eD2yJMZzI</string>
+    <string name="google_maps_api_key">AIzaSyAk9_7k5uSLBCU5OzseekTyTT-tyUGdlJc</string>
     <string name="no_internet_connection">No Internet connection</string>
-    <string name="google_mapsapi_key">AIzaSyBlRiK45phmpY_VpugHZRJ29-2fCpyNWmw</string>
     <string name="name">name</string>
     <string name="update">update</string>
 
