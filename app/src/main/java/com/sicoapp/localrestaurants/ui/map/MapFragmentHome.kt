@@ -1,17 +1,19 @@
 package com.sicoapp.localrestaurants.ui.map
 
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -20,11 +22,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.jakewharton.rxbinding4.view.clicks
 import com.sicoapp.localrestaurants.BaseActivity
+import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
-import com.sicoapp.localrestaurants.databinding.FragmentRestaurantPhotoBinding
 import com.sicoapp.localrestaurants.domain.Restraurant
 import com.sicoapp.localrestaurants.ui.BaseFR
 import com.sicoapp.localrestaurants.utils.CAMERA_PIC_REQUEST
@@ -33,11 +34,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_diralog_with_data.*
+import kotlinx.android.synthetic.main.app_bar_main.*
 import timber.log.Timber
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 @AndroidEntryPoint
@@ -49,11 +52,11 @@ class MapFragmentHome :
     private lateinit var mMapView: MapView
     private var listRestaurant: List<Restraurant>? = null
     private lateinit var item: Restraurant
+    private lateinit var dialogWithData: DialogWithData
     override var binding: FragmentMapHomeBinding? = null
     private var map: GoogleMap? = null
     var selectedImageUri: Uri? = null
-    private lateinit var bindingRes: FragmentRestaurantPhotoBinding
-    private val disposables = CompositeDisposable()
+    lateinit var imageFilePath: String
 
 
     override fun onCreateView(
@@ -71,8 +74,8 @@ class MapFragmentHome :
 
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
-        observeRestaurantData(map)
-        //observeRestaurantLiveData(map)
+        //observeRestaurantData(map)
+        observeRestaurantLiveData(map)
 
         Timber.d(" 1 ")
 
@@ -87,15 +90,15 @@ class MapFragmentHome :
                 .newLatLngZoom(LatLng(45.83758, 16.05111), 14f)
         )
 
-        Timber.d("3")
+        Timber.d("animateCamera")
     }
 
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
         item = listRestaurant!!.first { it.name == marker.title }
-
-        val dialogWithData = DialogWithData(item)
+        dialogWithData = DialogWithData()
+        dialogWithData.restaurant = item
 
         dialogWithData.show(requireActivity().supportFragmentManager, dialogWithData.tag)
 
@@ -135,27 +138,6 @@ class MapFragmentHome :
                     }
                 }
 
-
-                bt_address.clicks().subscribe {
-                    viewModel.addClicked()
-                }.addTo(disposables)
-
-                viewModel.showDialogWithData.observe(viewLifecycleOwner, Observer {
-                    val restaurant = dialogWithData.restaurant
-                    val dialogEdit = DialogEditData(restaurant.address)
-
-                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
-                    dialogEdit.listener = object : ListenerSubmitData {
-                        override fun onSubmitData(submitData: String) {
-                            item.address = submitData
-                            Timber.d(" update address")
-                            viewModel.update(item)
-                            dialogEdit.dismiss()
-                            dialogWithData.dismiss()
-                        }
-                    }
-                })
-
                 if (type == "address") {
                     val restaurant = dialogWithData.restaurant
                     val dialogEdit = DialogEditData(restaurant.address)
@@ -192,7 +174,6 @@ class MapFragmentHome :
                     Timber.d(" photo")
                     imageChooser()
                 }
-
             }
         }
         return true
@@ -221,19 +202,33 @@ class MapFragmentHome :
     }
 
     private fun imageChooser() {
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        this.startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST)
+        try {
+            val imageFile = createImageFile()
+            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            if (cameraIntent.resolveActivity(requireActivity().packageManager) != null) {
+                val authorities = requireActivity().packageName + ".fileprovider"
+                val imageUri = FileProvider.getUriForFile(requireContext(), authorities, imageFile)
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+                activity?.setResult(Activity.RESULT_OK, cameraIntent)
+                this.startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST)
+            }
+        } catch (e: IOException) {
+            Toast.makeText(requireContext(), "Could not create file!", Toast.LENGTH_SHORT).show()
+        }
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == CAMERA_PIC_REQUEST
-            && data != null
-        ) {
-            selectedImageUri = data.data
-
-            val photo = bundleOf("photo" to selectedImageUri.toString())
-            findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
+        )
+        {
+            if (resultCode == Activity.RESULT_OK) {
+                val photo = bundleOf("photo" to selectedImageUri.toString())
+                findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
+                dialogWithData.dismiss()
+                (activity as MainActivity).fab.hide()
+            }
         }
     }
 
@@ -276,6 +271,8 @@ class MapFragmentHome :
     private fun observeRestaurantLiveData(map: GoogleMap?) {
         Timber.d(" observeRestaurantData 4 ")
         viewModel.restraurantsFormDBLiveData.observe(viewLifecycleOwner, {
+
+            listRestaurant = it
 
             it.map {
                 map?.addMarker(
@@ -330,6 +327,7 @@ class MapFragmentHome :
                                         )
                                         .title(it.name)
                                 )
+                                Timber.d(" after addMarker 7 ")
                             }
                         }
                     }
@@ -338,6 +336,21 @@ class MapFragmentHome :
                         Timber.d(" Throwable ")
                     }
                 })
+    }
+
+
+    @Throws(IOException::class)
+    fun createImageFile(): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageFileName: String = "JPEG_" + timeStamp + "_"
+        val storageDir: File? =
+            requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        if (storageDir != null) {
+            if (!storageDir.exists()) storageDir.mkdirs()
+        }
+        val imageFile = File.createTempFile(imageFileName, ".jpg", storageDir)
+        imageFilePath = imageFile.absolutePath
+        return imageFile
     }
 
 

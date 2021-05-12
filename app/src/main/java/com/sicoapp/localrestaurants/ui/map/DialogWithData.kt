@@ -14,12 +14,12 @@ import com.sicoapp.localrestaurants.domain.Restraurant
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
-class DialogWithData(val restaurant: Restraurant) : DialogFragment() {
+class DialogWithData() : DialogFragment() {
 
     var listener : ListenerClicked? = null
     lateinit var viewModel : MapViewModel
-    private val disposables = CompositeDisposable()
-
+     val disposables = CompositeDisposable()
+    lateinit var restaurant: Restraurant
 
     override fun onCreateView(
         inflater: LayoutInflater,
