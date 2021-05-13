@@ -9,10 +9,12 @@ import kotlin.properties.Delegates
  * @author ll4
  * @date 12/10/2020
  */
-class BindMyProfile() : BaseObservable() {
+class BindMyProfile(var imageLoad :String) : BaseObservable() {
 
     @get:Bindable
-    var image  :String? by Delegates.observable("TEST image") { _, _, _ -> notifyPropertyChanged(BR.image) }
+    var image  :String by Delegates.observable("TEST image") { _, _, _ -> notifyPropertyChanged(BR.image) }
 
-
+    init {
+        imageLoad = image
+    }
 }

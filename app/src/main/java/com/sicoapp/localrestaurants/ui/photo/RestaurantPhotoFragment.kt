@@ -1,14 +1,15 @@
 package com.sicoapp.localrestaurants.ui.photo
 
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.databinding.FragmentRestaurantPhotoBinding
+
 
 /**
  * @author ll4
@@ -16,23 +17,38 @@ import com.sicoapp.localrestaurants.databinding.FragmentRestaurantPhotoBinding
  */
 class RestaurantPhotoFragment : Fragment() {
 
-    lateinit var binding : FragmentRestaurantPhotoBinding
+    lateinit var binding: FragmentRestaurantPhotoBinding
+    lateinit var imageString: String
+    lateinit var imageStringConvert: String
+    lateinit var bitmap: Bitmap
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arguments?.getString(MediaStore.ACTION_IMAGE_CAPTURE, "1")?.let {
-            BindMyProfile().image = it
+        arguments?.getString("photo", "1")?.let {
+            imageString = it
+            imageStringConvert = "file:///sdcard"  +  imageString.substring(19)
+            bitmap = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, Uri.parse(imageStringConvert))
         }
-
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_restaurant_photo, container, false)
+    ): View {
+
+        binding = FragmentRestaurantPhotoBinding.inflate(inflater)
+
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.restaurantImage.setImageBitmap(bitmap)
+
+    }
+
+
+
 }

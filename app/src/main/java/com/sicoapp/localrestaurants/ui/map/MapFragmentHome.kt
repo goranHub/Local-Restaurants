@@ -3,7 +3,6 @@ package com.sicoapp.localrestaurants.ui.map
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -55,8 +54,7 @@ class MapFragmentHome :
     private lateinit var dialogWithData: DialogWithData
     override var binding: FragmentMapHomeBinding? = null
     private var map: GoogleMap? = null
-    var selectedImageUri: Uri? = null
-    lateinit var imageFilePath: String
+    lateinit var imageFile: File
 
 
     override fun onCreateView(
@@ -203,14 +201,13 @@ class MapFragmentHome :
 
     private fun imageChooser() {
         try {
-            val imageFile = createImageFile()
-            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            if (cameraIntent.resolveActivity(requireActivity().packageManager) != null) {
-                val authorities = requireActivity().packageName + ".fileprovider"
+            imageFile = createImageFile()
+            val callCameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            if(callCameraIntent.resolveActivity(requireContext().packageManager) != null) {
+                val authorities = requireContext().packageName + ".fileprovider"
                 val imageUri = FileProvider.getUriForFile(requireContext(), authorities, imageFile)
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-                activity?.setResult(Activity.RESULT_OK, cameraIntent)
-                this.startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST)
+                callCameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+                startActivityForResult(callCameraIntent, CAMERA_PIC_REQUEST)
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Could not create file!", Toast.LENGTH_SHORT).show()
@@ -220,16 +217,29 @@ class MapFragmentHome :
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == CAMERA_PIC_REQUEST
-        )
-        {
-            if (resultCode == Activity.RESULT_OK) {
-                val photo = bundleOf("photo" to selectedImageUri.toString())
-                findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
-                dialogWithData.dismiss()
-                (activity as MainActivity).fab.hide()
-            }
+
+        if (resultCode == Activity.RESULT_OK && requestCode == CAMERA_PIC_REQUEST) {
+
+            val photo = bundleOf("photo" to   imageFile.absolutePath)
+
+            findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
+            dialogWithData.dismiss()
+            (activity as MainActivity).fab.hide()
+
         }
+    }
+
+
+    @Throws(IOException::class)
+    fun createImageFile(): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageFileName: String = "JPEG_" + timeStamp + "_"
+        val storageDir: File? = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        if (storageDir != null) {
+            if(!storageDir.exists()) storageDir.mkdirs()
+        }
+        val imageFile = File.createTempFile(imageFileName, ".jpg", storageDir)
+        return imageFile
     }
 
 
@@ -337,22 +347,6 @@ class MapFragmentHome :
                     }
                 })
     }
-
-
-    @Throws(IOException::class)
-    fun createImageFile(): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName: String = "JPEG_" + timeStamp + "_"
-        val storageDir: File? =
-            requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        if (storageDir != null) {
-            if (!storageDir.exists()) storageDir.mkdirs()
-        }
-        val imageFile = File.createTempFile(imageFileName, ".jpg", storageDir)
-        imageFilePath = imageFile.absolutePath
-        return imageFile
-    }
-
 
     private fun showLoading() {
         binding?.progressBar?.visibility = View.VISIBLE

@@ -4,12 +4,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-        <variable
-            name="data"
-            type="com.sicoapp.localrestaurants.ui.photo.BindMyProfile" />
-
-    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -19,14 +13,14 @@
 
         <ImageView
             android:id="@+id/restaurant_image"
-            android:layout_width="200dp"
-            android:layout_height="280dp"
-            app:srcCompat="@drawable/ic_launcher_background"
+            android:layout_width="347dp"
+            android:layout_height="413dp"
+            android:adjustViewBounds="true"
             app:layout_constraintBottom_toTopOf="@+id/btn_update"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:loadImageDetails="@{data.image}" />
+            tools:srcCompat="@tools:sample/avatars" />
 
         <Button
             android:id="@+id/btn_update"
