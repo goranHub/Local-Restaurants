@@ -25,9 +25,7 @@ class MapViewModel
     val restaurantData: LiveData<Resource<List<Restraurant>>> get() = _restaurantData
     private val _restaurantData = MutableLiveData<Resource<List<Restraurant>>>()
 
-    init {
-        getRestaurantsFromNetAndSaveIntoDB()
-    }
+
 
     @SuppressLint("CheckResult")
     fun getRestaurantsFromNetAndSaveIntoDB() {

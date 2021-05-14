@@ -2,11 +2,11 @@ package com.sicoapp.localrestaurants.ui.map
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -21,12 +21,14 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.domain.Restraurant
 import com.sicoapp.localrestaurants.ui.BaseFR
+import com.sicoapp.localrestaurants.ui.add.BottomSheetDialog
 import com.sicoapp.localrestaurants.utils.CAMERA_PIC_REQUEST
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -48,6 +50,7 @@ class MapFragmentHome :
     private lateinit var restraurant: Restraurant
     private lateinit var dialogWithData: DialogWithData
     private lateinit var imageFile: File
+    private lateinit var markerTitle: String
     private var map: GoogleMap? = null
     private val viewModel: MapViewModel by viewModels()
     private var listRestaurant: List<Restraurant>? = null
@@ -58,11 +61,23 @@ class MapFragmentHome :
         savedInstanceState: Bundle?
     ): View {
 
+        fabClick()
+
         binding = setBinding(inflater, container)
         mMapView = binding!!.map
         mMapView.onCreate(savedInstanceState)
         mMapView.getMapAsync(this)
+
         return binding!!.root
+    }
+
+    private fun fabClick() {
+        (activity as MainActivity).fab.setOnClickListener {view->
+            activity?.let {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show()
+                BottomSheetDialog.newInstance().show(it.supportFragmentManager, "test")
+            }
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
@@ -88,6 +103,7 @@ class MapFragmentHome :
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
+        markerTitle = marker.title
         restraurant = listRestaurant!!.first { it.name == marker.title }
         dialogWithData = DialogWithData()
         dialogWithData.restaurant = restraurant
@@ -164,9 +180,9 @@ class MapFragmentHome :
 
                 if (type == "photo") {
                     Timber.d(" photo")
-                    if(restraurant.photoTaken){
+                    if (restraurant.photoTaken) {
                         dialogWithData.bt_photo.visibility = View.GONE
-                    }else{
+                    } else {
                         imageChooser()
                     }
                 }
@@ -180,7 +196,7 @@ class MapFragmentHome :
         try {
             imageFile = createImageFile()
             val callCameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            if(callCameraIntent.resolveActivity(requireContext().packageManager) != null) {
+            if (callCameraIntent.resolveActivity(requireContext().packageManager) != null) {
                 val authorities = requireContext().packageName + ".fileprovider"
                 val imageUri = FileProvider.getUriForFile(requireContext(), authorities, imageFile)
                 callCameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
@@ -199,7 +215,7 @@ class MapFragmentHome :
 
             restraurant.photoTaken = true
             viewModel.update(restraurant)
-            val photo = bundleOf("photo" to   imageFile.absolutePath)
+            val photo = bundleOf("photo" to imageFile.absolutePath)
 
             findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
             dialogWithData.dismiss()
@@ -212,32 +228,45 @@ class MapFragmentHome :
     @Throws(IOException::class)
     fun createImageFile(): File {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName: String = "JPEG_" + timeStamp + "_"
+        val imageFileName: String = markerTitle + "_JPEG_" + timeStamp + "_"
         val storageDir: File? = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         if (storageDir != null) {
-            if(!storageDir.exists()) storageDir.mkdirs()
+            if (!storageDir.exists()) storageDir.mkdirs()
         }
         return File.createTempFile(imageFileName, ".jpg", storageDir)
     }
 
 
     private fun observeRestaurantLiveData(map: GoogleMap?) {
+
         Timber.d(" observeRestaurantData 4 ")
         viewModel.restraurantsFormDBLiveData.observe(viewLifecycleOwner, {
 
-            listRestaurant = it
+            if (it.isEmpty()) {
+                viewModel.getRestaurantsFromNetAndSaveIntoDB()
+            } else {
+                listRestaurant = it
 
-            it.map {
-                map?.addMarker(
-                    MarkerOptions().position(
-                        LatLng(
-                            it.latitude.toDouble(),
-                            it.longitude.toDouble()
-                        )
-                    ).title(it.name)
-                )
+                it.map {
+                    map?.addMarker(
+                        MarkerOptions().position(
+                            LatLng(
+                                it.latitude.toDouble(),
+                                it.longitude.toDouble()
+                            )
+                        ).title(it.name)
+                    )
+                }
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.action_add) {
+            activity?.let { BottomSheetDialog.newInstance().show(it.supportFragmentManager, "test") }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun setBinding(

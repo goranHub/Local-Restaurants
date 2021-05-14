@@ -11,13 +11,12 @@ import android.widget.Button
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.domain.Restraurant
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
 class DialogWithData() : DialogFragment() {
 
     var listener : ListenerClicked? = null
-    lateinit var restaurant: Restraurant
+    var restaurant = Restraurant("","","","",false)
 
     override fun onCreateView(
         inflater: LayoutInflater,
