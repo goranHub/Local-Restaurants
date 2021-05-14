@@ -24,23 +24,15 @@ class MapViewModel
 
     val restaurantData: LiveData<Resource<List<Restraurant>>> get() = _restaurantData
     private val _restaurantData = MutableLiveData<Resource<List<Restraurant>>>()
-    private val addClicks = PublishSubject.create<Unit>()
-    val showDialogWithData = MutableLiveData<Int>()
-    private val disposables = CompositeDisposable()
 
     init {
         getRestaurantsFromNetAndSaveIntoDB()
-
-        addClicks
-            .throttleFirst(1, TimeUnit.SECONDS, Schedulers.computation())
-            .subscribe { showDialogWithData.postValue(1) }
-            .addTo(disposables)
     }
 
     @SuppressLint("CheckResult")
     fun getRestaurantsFromNetAndSaveIntoDB() {
         repository.getRestaurantsFromNetAndSaveIntoDB()
-            ?.subscribeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe {
                 _restaurantData.value = Resource.success(it)
@@ -49,12 +41,7 @@ class MapViewModel
 
     val restraurantsFormDBLiveData = LiveDataReactiveStreams.fromPublisher(repository.getRestaurantsDB())
 
-    fun getFromDB()= repository.getRestaurantSingle()
-
-    fun saveRestaurants(restaurant : Restraurant)= repository.saveRestaurants(restaurant)
-
     fun update(restaurant: Restraurant) = repository.update(restaurant)
 
-    fun addClicked() = addClicks.onNext(Unit)
 
 }

@@ -17,8 +17,6 @@ import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 class DialogWithData() : DialogFragment() {
 
     var listener : ListenerClicked? = null
-    lateinit var viewModel : MapViewModel
-     val disposables = CompositeDisposable()
     lateinit var restaurant: Restraurant
 
     override fun onCreateView(
@@ -75,9 +73,6 @@ class DialogWithData() : DialogFragment() {
     }
 
     private fun setupClickListenersAddress(view: View) {
- /*       bt_address.clicks().subscribe {
-            viewModel.addClicked()
-        }.addTo(disposables)*/
         view.bt_address.setOnClickListener {
             listener?.onButton("address")
         }

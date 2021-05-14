@@ -30,5 +30,13 @@
     <fragment
         android:id="@+id/restaurantPhotoFragment"
         android:name="com.sicoapp.localrestaurants.ui.photo.RestaurantPhotoFragment"
-        android:label="RestaurantPhotoFragment" />
+        android:label="RestaurantPhotoFragment" >
+        <action
+            android:id="@+id/action_restaurantPhotoFragment_to_nav_map"
+            app:destination="@id/nav_map" />
+    </fragment>
+    <fragment
+        android:id="@+id/dialogWithData"
+        android:name="com.sicoapp.localrestaurants.ui.map.DialogWithData"
+        android:label="DialogWithData" />
 </navigation>
