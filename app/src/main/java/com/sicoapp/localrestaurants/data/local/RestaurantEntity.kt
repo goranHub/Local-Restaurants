@@ -27,6 +27,9 @@ data class RestaurantEntity(
     var longitude: String,
 
     @ColumnInfo(name = "name")
-    var name: String
+    var name: String,
+
+    @ColumnInfo(name = "photoTaken")
+    var photoTaken: Boolean
 
 ) : Parcelable

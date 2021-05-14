@@ -15,7 +15,8 @@ object DataMapper {
                 address = it.address,
                 latitude = it.latitude,
                 longitude = it.longitude,
-                name = it.name
+                name = it.name,
+                photoTaken = it.photoTaken
             )
         }
 
@@ -26,7 +27,8 @@ object DataMapper {
             address = res.address,
             latitude = res.latitude,
             longitude = res.longitude,
-            name = res.name
+            name = res.name,
+            photoTaken = res.photoTaken
         )
     }
 
@@ -45,11 +47,13 @@ fun List<Restraurant>.mapToRestaurantEntity(): List<RestaurantEntity> {
             val address = it.address
             val latitude = it.latitude
             val longitude = it.longitude
+            val photoTaken = it.photoTaken
             RestaurantEntity(
                 address = address,
                 latitude = latitude,
                 longitude = longitude,
-                name = name
+                name = name,
+                photoTaken = photoTaken
             )
         }.toMutableList()
 

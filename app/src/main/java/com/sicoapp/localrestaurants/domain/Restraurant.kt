@@ -17,5 +17,6 @@ data class Restraurant(
     @SerializedName("Longitude")
     var longitude: String,
     @SerializedName("Name")
-    var name: String
+    var name: String,
+    var photoTaken : Boolean
 ) : Parcelable
