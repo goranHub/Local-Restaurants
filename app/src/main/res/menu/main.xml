@@ -6,4 +6,9 @@
         android:orderInCategory="100"
         android:title="@string/action_add_restaurant"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/get_place"
+        android:title="@string/get_place"
+        app:showAsAction="always"/>
 </menu>

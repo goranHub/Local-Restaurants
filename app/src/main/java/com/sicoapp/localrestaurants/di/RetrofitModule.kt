@@ -25,7 +25,7 @@ object RetrofitModule {
         @Singleton
         fun provideOkHttpClient(): OkHttpClient {
             val logger = HttpLoggingInterceptor()
-            logger.level = HttpLoggingInterceptor.Level.BODY
+            logger.level = HttpLoggingInterceptor.Level.BASIC
             return OkHttpClient.Builder().addInterceptor(logger).build()
         }
 
