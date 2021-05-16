@@ -66,12 +66,13 @@ class MapFragmentHome :
     private lateinit var mMapView: MapView
     private lateinit var restraurant: Restraurant
     private lateinit var dialogWithData: DialogWithData
+    private lateinit var newRestaurant: Restraurant
     private val addRestaurantDialog by lazy { AddRestaurantDialog() }
     private lateinit var imageFile: File
     private lateinit var markerTitle: String
     private var map: GoogleMap? = null
     private val viewModel: MapViewModel by viewModels()
-    private var listRestaurant: List<Restraurant>? = null
+    private var listRestaurant: MutableList<Restraurant>? = null
     private lateinit var placesClient: PlacesClient
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val defaultLocation = LatLng(45.84107, 16.05076)
@@ -152,7 +153,8 @@ class MapFragmentHome :
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
-        markerTitle = marker.title
+        listRestaurant?.add(newRestaurant)
+
         restraurant = listRestaurant!!.first { it.name == marker.title }
         dialogWithData = DialogWithData()
         dialogWithData.restaurant = restraurant
@@ -274,7 +276,7 @@ class MapFragmentHome :
     @Throws(IOException::class)
     fun createImageFile(): File {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName: String = markerTitle + "_JPEG_" + timeStamp + "_"
+        val imageFileName: String = "_JPEG_" + timeStamp + "_"
         val storageDir: File? = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         if (storageDir != null) {
             if (!storageDir.exists()) storageDir.mkdirs()
@@ -290,15 +292,12 @@ class MapFragmentHome :
             if (it.isEmpty()) {
                 viewModel.getRestaurantsFromNetAndSaveIntoDB()
             } else {
-                listRestaurant = it
+                listRestaurant = it as MutableList<Restraurant>?
 
                 it.map {
                     map?.addMarker(
                         MarkerOptions().position(
-                            LatLng(
-                                it.latitude.toDouble(),
-                                it.longitude.toDouble()
-                            )
+                            LatLng(it.latitude.toDouble(), it.longitude.toDouble())
                         ).title(it.name)
                     )
                 }
@@ -459,27 +458,31 @@ class MapFragmentHome :
     private val callback = object : AddRestaurantDialog.ListenerClicked {
         override fun onName(name: String) {
 
-            listRestaurant?.map{
-                map?.addMarker(
-                    MarkerOptions()
-                        .title(name)
-                        .position(
-                            LatLng(
-                                lastKnownLocation!!.latitude,
-                                lastKnownLocation!!.longitude
-                            )
+            val newMarker = map?.addMarker(
+                MarkerOptions()
+                    .title(name)
+                    .position(
+                        LatLng(
+                            lastKnownLocation!!.latitude,
+                            lastKnownLocation!!.longitude
                         )
-                )
-            }
+                    )
+            )
 
-
+            newRestaurant = Restraurant(
+                "",
+                lastKnownLocation!!.latitude.toString(),
+                lastKnownLocation!!.longitude.toString(),
+                newMarker!!.title,
+                false
+            )
             Timber.d(name)
         }
 
         override fun onAddress(address: String) {
+            newRestaurant.address = address
             Timber.d(address)
         }
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
