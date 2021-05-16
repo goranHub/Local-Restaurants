@@ -16,26 +16,6 @@ class NetworkDataSource @Inject constructor(
     private val restaurantServis: RestaurantServis
 ) {
 
-    private lateinit var responseRes : List<Restraurant>
-
-/*    fun fetchRestaurants():  Single<List<Restraurant>>  {
-
-        restaurantServis.getAll().enqueue(object : Callback<List<Restraurant>>{
-            override fun onResponse(
-                call: Call<List<Restraurant>>,
-                response: Response<List<Restraurant>>
-            ) {
-                responseRes = response.body() ?: return
-            }
-
-            override fun onFailure(call: Call<List<Restraurant>>, t: Throwable) {
-                Log.d("error", "onFailure ${t.localizedMessage}")
-            }
-        })
-        return Single.just(responseRes)
-    }*/
-
-    // orginal api call
     fun fetchRestaurants():  Single<List<Restraurant>>  {
         return restaurantServis.getAll()
     }

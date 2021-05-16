@@ -13,7 +13,7 @@ import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.domain.Restraurant
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
-class DialogWithData() : DialogFragment() {
+class DialogWithData : DialogFragment() {
 
     var listener : ListenerClicked? = null
     var restaurant = Restraurant("","","","",false)

@@ -28,7 +28,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -36,13 +35,13 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.material.snackbar.Snackbar
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.domain.Restraurant
 import com.sicoapp.localrestaurants.ui.BaseFR
+import com.sicoapp.localrestaurants.ui.add.AddRestaurantDialog
 import com.sicoapp.localrestaurants.ui.add.BottomSheetDialog
 import com.sicoapp.localrestaurants.utils.CAMERA_PIC_REQUEST
 import com.sicoapp.localrestaurants.utils.DEFAULT_ZOOM
@@ -67,13 +66,12 @@ class MapFragmentHome :
     private lateinit var mMapView: MapView
     private lateinit var restraurant: Restraurant
     private lateinit var dialogWithData: DialogWithData
+    private val addRestaurantDialog by lazy { AddRestaurantDialog() }
     private lateinit var imageFile: File
     private lateinit var markerTitle: String
     private var map: GoogleMap? = null
     private val viewModel: MapViewModel by viewModels()
     private var listRestaurant: List<Restraurant>? = null
-
-
     private lateinit var placesClient: PlacesClient
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val defaultLocation = LatLng(45.84107, 16.05076)
@@ -83,6 +81,7 @@ class MapFragmentHome :
     private var likelyPlaceAddresses: Array<String?> = arrayOfNulls(0)
     private var likelyPlaceAttributions: Array<List<*>?> = arrayOfNulls(0)
     private var likelyPlaceLatLngs: Array<LatLng?> = arrayOfNulls(0)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,6 +100,8 @@ class MapFragmentHome :
                 getString(R.string.google_maps_api_key)
             )
         }
+
+        addRestaurantDialog.listener = callback
 
         placesClient = Places.createClient(requireContext())
 
@@ -144,10 +145,8 @@ class MapFragmentHome :
     }
 
     private fun fabClick() {
-        (activity as MainActivity).fab.setOnClickListener { view ->
-            activity?.let {
-                BottomSheetDialog.newInstance().show(it.supportFragmentManager, "test")
-            }
+        (activity as MainActivity).fab.setOnClickListener { _ ->
+            BottomSheetDialog.newInstance().show(requireActivity().supportFragmentManager, "test")
         }
     }
 
@@ -457,13 +456,39 @@ class MapFragmentHome :
     }
 
 
+    private val callback = object : AddRestaurantDialog.ListenerClicked {
+        override fun onName(name: String) {
+
+            listRestaurant?.map{
+                map?.addMarker(
+                    MarkerOptions()
+                        .title(name)
+                        .position(
+                            LatLng(
+                                lastKnownLocation!!.latitude,
+                                lastKnownLocation!!.longitude
+                            )
+                        )
+                )
+            }
+
+
+            Timber.d(name)
+        }
+
+        override fun onAddress(address: String) {
+            Timber.d(address)
+        }
+
+    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_add) {
-            activity?.let {
-                BottomSheetDialog.newInstance().show(it.supportFragmentManager, "test")
-            }
+            addRestaurantDialog.show(
+                requireActivity().supportFragmentManager,
+                addRestaurantDialog.tag
+            )
         }
         if (item.itemId == R.id.get_place) {
             showCurrentPlace()
@@ -504,6 +529,7 @@ class MapFragmentHome :
             .setItems(likelyPlaceNames, listener)
             .show()
     }
+
 
     override fun onResume() {
         mMapView.onResume()
