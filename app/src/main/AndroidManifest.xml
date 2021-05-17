@@ -10,9 +10,9 @@
 
     <application
         android:name=".BaseHiltActivity"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_local_restaurant"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher_local_restaurant_round"
         android:supportsRtl="true"
         android:windowSoftInputMode="adjustResize"
         android:usesCleartextTraffic="true"

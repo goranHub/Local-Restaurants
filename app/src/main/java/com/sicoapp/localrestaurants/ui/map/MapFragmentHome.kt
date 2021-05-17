@@ -66,10 +66,9 @@ class MapFragmentHome :
     private lateinit var mMapView: MapView
     private lateinit var restraurant: Restraurant
     private lateinit var dialogWithData: DialogWithData
-    private lateinit var newRestaurant: Restraurant
+    private var newRestaurant = Restraurant("","","","",false)
     private val addRestaurantDialog by lazy { AddRestaurantDialog() }
     private lateinit var imageFile: File
-    private lateinit var markerTitle: String
     private var map: GoogleMap? = null
     private val viewModel: MapViewModel by viewModels()
     private var listRestaurant: MutableList<Restraurant>? = null
@@ -146,7 +145,7 @@ class MapFragmentHome :
     }
 
     private fun fabClick() {
-        (activity as MainActivity).fab.setOnClickListener { _ ->
+        (activity as MainActivity).fab.setOnClickListener {
             BottomSheetDialog.newInstance().show(requireActivity().supportFragmentManager, "test")
         }
     }
@@ -258,6 +257,7 @@ class MapFragmentHome :
         }
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun imageChooser() {
         try {
             imageFile = createImageFile()
@@ -273,6 +273,7 @@ class MapFragmentHome :
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class)
     fun createImageFile(): File {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
@@ -287,14 +288,14 @@ class MapFragmentHome :
     private fun observeRestaurantLiveData(map: GoogleMap?) {
 
         Timber.d(" observeRestaurantData 4 ")
-        viewModel.restraurantsFormDBLiveData.observe(viewLifecycleOwner, {
+        viewModel.restraurantsFormDBLiveData.observe(viewLifecycleOwner, { list ->
 
-            if (it.isEmpty()) {
+            if (list.isEmpty()) {
                 viewModel.getRestaurantsFromNetAndSaveIntoDB()
             } else {
-                listRestaurant = it as MutableList<Restraurant>?
+                listRestaurant = list as MutableList<Restraurant>?
 
-                it.map {
+                list.map {
                     map?.addMarker(
                         MarkerOptions().position(
                             LatLng(it.latitude.toDouble(), it.longitude.toDouble())
@@ -313,8 +314,7 @@ class MapFragmentHome :
                     it.applicationContext,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 )
-            }
-            == PackageManager.PERMISSION_GRANTED) {
+            } == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true
         } else {
             ActivityCompat.requestPermissions(
@@ -511,7 +511,7 @@ class MapFragmentHome :
                     """.trimIndent()
             }
 
-            map?.addMarker(
+            val newMarker = map?.addMarker(
                 MarkerOptions()
                     .title(likelyPlaceNames[which])
                     .position(markerLatLng!!)
@@ -519,11 +519,12 @@ class MapFragmentHome :
             )
 
 
-            map?.moveCamera(
-                CameraUpdateFactory.newLatLngZoom(
-                    markerLatLng,
-                    DEFAULT_ZOOM.toFloat()
-                )
+            newRestaurant = Restraurant(
+                likelyPlaceAddresses[which].toString(),
+                newMarker!!.position.latitude.toString(),
+                newMarker.position.longitude.toString(),
+                newMarker.title,
+                false
             )
         }
 
