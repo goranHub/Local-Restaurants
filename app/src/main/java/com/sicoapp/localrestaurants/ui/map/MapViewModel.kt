@@ -6,16 +6,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.sicoapp.localrestaurants.data.local.RestaurantEntity
 import com.sicoapp.localrestaurants.domain.Repository
 import com.sicoapp.localrestaurants.domain.Restraurant
-import com.sicoapp.localrestaurants.utils.livedata.Resource
+import com.sicoapp.localrestaurants.utils.Resource
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.PublishSubject
-import java.util.concurrent.TimeUnit
 
 class MapViewModel
 @ViewModelInject constructor(
@@ -37,7 +32,7 @@ class MapViewModel
             }
     }
 
-    val restraurantsFormDBLiveData = LiveDataReactiveStreams.fromPublisher(repository.getRestaurantsDB())
+    val restaurantsFormDBLiveData = LiveDataReactiveStreams.fromPublisher(repository.getRestaurantsDB())
 
     fun update(restaurant: Restraurant) = repository.update(restaurant)
 

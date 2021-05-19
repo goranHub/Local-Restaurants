@@ -21,10 +21,10 @@ data class RestaurantEntity(
     var address: String,
 
     @ColumnInfo(name = "latitude")
-    var latitude: String,
+    var latitude: Double,
 
     @ColumnInfo(name = "longitude")
-    var longitude: String,
+    var longitude: Double,
 
     @ColumnInfo(name = "name")
     var name: String,

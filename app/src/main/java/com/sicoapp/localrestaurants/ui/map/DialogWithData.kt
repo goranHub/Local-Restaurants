@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 class DialogWithData : DialogFragment() {
 
     var listener : ListenerClicked? = null
-    var restaurant = Restraurant("","","","",false)
+    var restaurant = Restraurant("",0.0,0.0,"",false)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,8 +34,8 @@ class DialogWithData : DialogFragment() {
 
         btTitle.text = restaurant.name
         btAddress.text = restaurant.address
-        btLongitude.text = restaurant.longitude
-        btLatitude.text = restaurant.latitude
+        btLongitude.text = restaurant.longitude.toString()
+        btLatitude.text = restaurant.latitude.toString()
 
         return v
     }

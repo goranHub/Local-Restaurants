@@ -42,14 +42,6 @@ class Repository
         }
     }
 
-    fun getRestaurantSingle() = databaseDataSource.getRestaurantSingle().map {
-        DataMapper.mapEntitiesToDomain(it)
-    }
-
-    fun saveRestaurants(restaurant: Restraurant) {
-        databaseDataSource.saveRestaurants(DataMapper.mapToSingleRestaurantEntity(restaurant))
-    }
-
     fun update(restaurant: Restraurant) {
         databaseDataSource.updateRestaurants(DataMapper.mapToSingleRestaurantEntity(restaurant))
     }

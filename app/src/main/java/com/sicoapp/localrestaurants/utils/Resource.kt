@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.utils.livedata
+package com.sicoapp.localrestaurants.utils
 
 enum class Status {
     SUCCESS,

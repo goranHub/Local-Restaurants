@@ -13,9 +13,9 @@ data class Restraurant(
     @SerializedName("Address")
     var address: String,
     @SerializedName("Latitude")
-    var latitude: String,
+    var latitude: Double,
     @SerializedName("Longitude")
-    var longitude: String,
+    var longitude: Double,
     @SerializedName("Name")
     var name: String,
     var photoTaken : Boolean
