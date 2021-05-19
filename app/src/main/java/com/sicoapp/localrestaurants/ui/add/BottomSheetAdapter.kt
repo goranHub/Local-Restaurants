@@ -7,18 +7,18 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.sicoapp.localrestaurants.R
+import com.sicoapp.localrestaurants.domain.SdStoragePhoto
 
 
-class BottomSheetAdapter : RecyclerView.Adapter<BottomSheetAdapter.Item>() {
+class BottomSheetAdapter (private val sdStoragePhoto : List<SdStoragePhoto>): RecyclerView.Adapter<BottomSheetAdapter.Item>() {
 
-    private val list = (1..15).toList()
-
-    override fun getItemId(position: Int) = list[position].toLong()
+    private var list = mutableListOf<SdStoragePhoto>()
 
     override fun getItemCount() = list.size
 
     override fun onBindViewHolder(holder: Item, position: Int) {
         holder.tv.text = list[position].toString()
+        holder.iv.setImageBitmap(list[position].bmp)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Item {
@@ -28,5 +28,10 @@ class BottomSheetAdapter : RecyclerView.Adapter<BottomSheetAdapter.Item>() {
     class Item(view: View) : RecyclerView.ViewHolder(view) {
         val tv = view.findViewById<TextView>(R.id.tv_view_holder)!!
         val iv = view.findViewById<ImageView>(R.id.iv_view_holder)!!
+    }
+
+    fun addRestaurantToAdapter(){
+        list = sdStoragePhoto.toMutableList()
+        notifyDataSetChanged()
     }
 }
