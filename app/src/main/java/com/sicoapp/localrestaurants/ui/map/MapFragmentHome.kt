@@ -15,15 +15,17 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -45,6 +47,8 @@ import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.data.remote.Restraurant
 import com.sicoapp.localrestaurants.ui.BaseFR
 import com.sicoapp.localrestaurants.ui.add.AddNewRestaurantDialog
+import com.sicoapp.localrestaurants.ui.all.BindSdStoragePhoto
+import com.sicoapp.localrestaurants.ui.all.BottomSheetAdapter
 import com.sicoapp.localrestaurants.ui.all.BottomSheetDialog
 import com.sicoapp.localrestaurants.utils.CAMERA_PIC_REQUEST
 import com.sicoapp.localrestaurants.utils.DEFAULT_ZOOM
@@ -52,6 +56,7 @@ import com.sicoapp.localrestaurants.utils.M_MAX_ENTRIES
 import com.sicoapp.localrestaurants.utils.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,23 +66,26 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MapFragmentHome :
+class MapFragmentHome @Inject constructor(
+    val dialogWithRestaurantData: DialogWithData,
+    val addRestaurantDialog: AddNewRestaurantDialog,
+    val bottomSheetDialog: BottomSheetDialog,
+    val bottomSheetAdapter: BottomSheetAdapter,
+    var viewModel: MapViewModel? = null
+) :
     BaseFR<FragmentMapHomeBinding, BaseActivity>(),
     OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     override var binding: FragmentMapHomeBinding? = null
     private lateinit var mMapView: MapView
     private lateinit var clickedRestaurant: Restraurant
-    private lateinit var dialogWithRestaurantData: DialogWithData
     private var newRestaurant = Restraurant("", 0.0, 0.0, "", false)
-    private val addRestaurantDialog by lazy { AddNewRestaurantDialog() }
-    private lateinit var imageFile: File
-    private lateinit var bottomSheetDialog: BottomSheetDialog
     private var map: GoogleMap? = null
-    private val viewModel: MapViewModel by viewModels()
+    private lateinit var imageFile: File
     private lateinit var placesClient: PlacesClient
     private var listRestaurant = mutableListOf<Restraurant>()
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -95,6 +103,12 @@ class MapFragmentHome :
         setHasOptionsMenu(true)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel =
+            viewModel ?: ViewModelProvider(requireActivity()).get(MapViewModel::class.java)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -109,8 +123,6 @@ class MapFragmentHome :
         }
 
         loadPhotosFromSdStorageIntoBottomSheetDialog()
-
-        dialogWithRestaurantData = DialogWithData()
 
         addRestaurantDialog.listener = callback
 
@@ -235,7 +247,7 @@ class MapFragmentHome :
     }
 
     private fun updateDBAndDismisDialog(dialogEdit: DialogEditData) {
-        viewModel.update(this@MapFragmentHome.clickedRestaurant)
+        viewModel?.update(this@MapFragmentHome.clickedRestaurant)
         dialogEdit.dismiss()
         dialogWithRestaurantData.dismiss()
     }
@@ -245,7 +257,7 @@ class MapFragmentHome :
 
         if (resultCode == Activity.RESULT_OK && requestCode == CAMERA_PIC_REQUEST) {
             clickedRestaurant.photoTaken = true
-            viewModel.update(clickedRestaurant)
+            viewModel?.update(clickedRestaurant)
 
             val photo = bundleOf("photo" to imageFile.absolutePath)
             findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
@@ -283,10 +295,10 @@ class MapFragmentHome :
     }
 
     private fun observeRestaurantLiveData(map: GoogleMap?) {
-        viewModel.restaurantsFormDBLiveData.observe(viewLifecycleOwner, { list ->
+        viewModel?.restaurantsFormDBLiveData?.observe(viewLifecycleOwner, { list ->
 
             if (list.isEmpty()) {
-                viewModel.getRestaurantsFromNetAndSaveIntoDB()
+                viewModel?.getRestaurantsFromNetAndSaveIntoDB()
             } else {
                 listRestaurant = list as MutableList<Restraurant>
 
@@ -472,7 +484,10 @@ class MapFragmentHome :
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_add) {
-            addRestaurantDialog.show(requireActivity().supportFragmentManager, addRestaurantDialog.tag)
+            addRestaurantDialog.show(
+                requireActivity().supportFragmentManager,
+                addRestaurantDialog.tag
+            )
         }
         if (item.itemId == R.id.get_place) {
             showCurrentPlace()
@@ -508,7 +523,7 @@ class MapFragmentHome :
                 false
             )
             listRestaurant.add(newRestaurant)
-            viewModel.update(newRestaurant)
+            viewModel?.update(newRestaurant)
         }
 
         AlertDialog.Builder(requireContext())
@@ -519,8 +534,8 @@ class MapFragmentHome :
 
     private suspend fun loadPhotosFromSdStorage(): List<SdStoragePhoto> {
         return withContext(Dispatchers.IO) {
-            val storageDir = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-                ?.listFiles()
+            val storageDir =
+                activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)?.listFiles()
             storageDir?.filter { it.canRead() && it.isFile && it.name.endsWith(".jpg") }?.map {
                 val bytes = it.readBytes()
                 val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
@@ -533,10 +548,9 @@ class MapFragmentHome :
     private fun loadPhotosFromSdStorageIntoBottomSheetDialog() {
         lifecycleScope.launch {
             val photos = loadPhotosFromSdStorage()
-            bottomSheetDialog = BottomSheetDialog(photos)
+            bottomSheetDialog.photos = photos
         }
     }
-
 
     override fun onResume() {
         mMapView.onResume()

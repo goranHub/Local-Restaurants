@@ -8,13 +8,14 @@ import android.view.View
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
+import javax.inject.Inject
 
 
 /**
  * @author ll4
  * @date 5/15/2021
  */
-class AddNewRestaurantDialog : DialogFragment() {
+class AddNewRestaurantDialog @Inject constructor() : DialogFragment() {
 
     lateinit var listener : ListenerClicked
 

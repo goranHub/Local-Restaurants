@@ -12,8 +12,9 @@ import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.remote.Restraurant
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
+import javax.inject.Inject
 
-class DialogWithData : DialogFragment() {
+class DialogWithData @Inject constructor(): DialogFragment() {
 
     var listener : ListenerClicked? = null
     var restaurant = Restraurant("",0.0,0.0,"",false)

@@ -8,3 +8,4 @@ import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
  * @date 5/21/2021
  */
 class BindSdStoragePhoto(val sdStoragePhoto: SdStoragePhoto) : BaseObservable()
+

@@ -8,7 +8,7 @@ import com.sicoapp.localrestaurants.databinding.ItemBottomSheetBinding
 import javax.inject.Inject
 
 
-class BottomSheetAdapter @Inject constructor(): RecyclerView.Adapter<BottomSheetAdapter.BottomViewHolder>() {
+class BottomSheetAdapter @Inject constructor() : RecyclerView.Adapter<BottomSheetAdapter.BottomViewHolder>() {
 
     private var list = mutableListOf<BindSdStoragePhoto>()
 
