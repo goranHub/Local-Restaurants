@@ -14,7 +14,7 @@
     <string name="no_internet_connection">No Internet connection</string>
     <string name="name">name</string>
     <string name="update">update</string>
-    <string name="text_bottom_sheet">text_bottom_sheet</string>
+    <string name="all_restaurants">All Restaurants</string>
 
     <string name="title_activity_maps">Current Place Details</string>
     <string name="default_info_title">Default Location</string>

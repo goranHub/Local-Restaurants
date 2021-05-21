@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.data.local
+package com.sicoapp.localrestaurants.data.local.database
 
 /**
  * @author ll4

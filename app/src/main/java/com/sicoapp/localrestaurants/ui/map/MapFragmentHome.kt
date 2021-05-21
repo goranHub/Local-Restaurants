@@ -40,12 +40,12 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.R
+import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
-import com.sicoapp.localrestaurants.domain.SdStoragePhoto
-import com.sicoapp.localrestaurants.domain.Restraurant
+import com.sicoapp.localrestaurants.data.remote.Restraurant
 import com.sicoapp.localrestaurants.ui.BaseFR
-import com.sicoapp.localrestaurants.ui.add.AddRestaurantDialog
-import com.sicoapp.localrestaurants.ui.add.BottomSheetDialog
+import com.sicoapp.localrestaurants.ui.add.AddNewRestaurantDialog
+import com.sicoapp.localrestaurants.ui.all.BottomSheetDialog
 import com.sicoapp.localrestaurants.utils.CAMERA_PIC_REQUEST
 import com.sicoapp.localrestaurants.utils.DEFAULT_ZOOM
 import com.sicoapp.localrestaurants.utils.M_MAX_ENTRIES
@@ -70,10 +70,10 @@ class MapFragmentHome :
 
     override var binding: FragmentMapHomeBinding? = null
     private lateinit var mMapView: MapView
-    private lateinit var restaurant: Restraurant
-    private lateinit var dialogWithData: DialogWithData
-    private var newRestaurant = Restraurant("",0.0,0.0,"",false)
-    private val addRestaurantDialog by lazy { AddRestaurantDialog() }
+    private lateinit var clickedRestaurant: Restraurant
+    private lateinit var dialogWithRestaurantData: DialogWithData
+    private var newRestaurant = Restraurant("", 0.0, 0.0, "", false)
+    private val addRestaurantDialog by lazy { AddNewRestaurantDialog() }
     private lateinit var imageFile: File
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private var map: GoogleMap? = null
@@ -109,6 +109,8 @@ class MapFragmentHome :
         }
 
         loadPhotosFromSdStorageIntoBottomSheetDialog()
+
+        dialogWithRestaurantData = DialogWithData()
 
         addRestaurantDialog.listener = callback
 
@@ -162,107 +164,93 @@ class MapFragmentHome :
     override fun onMarkerClick(marker: Marker): Boolean {
 
         listRestaurant.add(newRestaurant)
+        clickedRestaurant = listRestaurant.first { it.name == marker.title }
+        dialogWithRestaurantData.restaurant = clickedRestaurant
+        dialogWithRestaurantData.show(
+            requireActivity().supportFragmentManager,
+            dialogWithRestaurantData.tag
+        )
 
-        restaurant = listRestaurant.first { it.name == marker.title }
-        dialogWithData = DialogWithData()
-        dialogWithData.restaurant = restaurant
+        dialogWithRestaurantData.listener = object : DialogWithData.ListenerClicked {
 
-        dialogWithData.show(requireActivity().supportFragmentManager, dialogWithData.tag)
-
-        dialogWithData.listener = object : DialogWithData.ListenerClicked {
-
-            override fun onButton(type: String) {
-
-                if (type == "latitude") {
-                    val restaurant = dialogWithData.restaurant
-                    val dialogEdit = DialogEditData(restaurant.latitude.toString())
-
-                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
-                    dialogEdit.listener = object : ListenerSubmitData {
-                        override fun onSubmitData(submitData: String) {
-                            this@MapFragmentHome.restaurant.latitude = submitData.toDouble()
-                            Timber.d(" update latitude")
-                            viewModel.update(this@MapFragmentHome.restaurant)
-                            dialogEdit.dismiss()
-                            dialogWithData.dismiss()
-                        }
-                    }
-                }
-
-                if (type == "longitude") {
-                    val restaurant = dialogWithData.restaurant
-                    val dialogEdit = DialogEditData(restaurant.longitude.toString())
-
-                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
-                    dialogEdit.listener = object : ListenerSubmitData {
-                        override fun onSubmitData(submitData: String) {
-                            this@MapFragmentHome.restaurant.longitude = submitData.toDouble()
-                            Timber.d(" update longitude  ")
-                            viewModel.update(this@MapFragmentHome.restaurant)
-                            dialogEdit.dismiss()
-                            dialogWithData.dismiss()
-                        }
-                    }
-                }
-
-                if (type == "address") {
-                    val restaurant = dialogWithData.restaurant
-                    val dialogEdit = DialogEditData(restaurant.address)
-
-                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
-                    dialogEdit.listener = object : ListenerSubmitData {
-                        override fun onSubmitData(submitData: String) {
-                            this@MapFragmentHome.restaurant.address = submitData
-                            Timber.d(" update address")
-                            viewModel.update(this@MapFragmentHome.restaurant)
-                            dialogEdit.dismiss()
-                            dialogWithData.dismiss()
-                        }
-                    }
-                }
-
-                if (type == "name") {
-                    val restaurant = dialogWithData.restaurant
-                    val dialogEdit = DialogEditData(restaurant.name)
-
-                    dialogEdit.show(requireActivity().supportFragmentManager, dialogWithData.tag)
-                    dialogEdit.listener = object : ListenerSubmitData {
-                        override fun onSubmitData(submitData: String) {
-                            this@MapFragmentHome.restaurant.name = submitData
-                            Timber.d(" update name ")
-                            viewModel.update(this@MapFragmentHome.restaurant)
-                            dialogEdit.dismiss()
-                            dialogWithData.dismiss()
-                        }
-                    }
-                }
-
-                if (type == "photo") {
-                    Timber.d(" photo")
-                    if (restaurant.photoTaken) {
-                        dialogWithData.bt_photo.visibility = View.GONE
-                    } else {
-                        imageChooser()
+            override fun onButtonLatitude() {
+                val dialogEdit =
+                    modifyRestaurantData(dialogWithRestaurantData.restaurant.latitude.toString())
+                dialogEdit.listener = object : ListenerEditData {
+                    override fun onSubmitData(submitData: String) {
+                        this@MapFragmentHome.clickedRestaurant.latitude = submitData.toDouble()
+                        updateDBAndDismisDialog(dialogEdit)
                     }
                 }
             }
+
+            override fun onButtonLongitude() {
+                val dialogEdit =
+                    modifyRestaurantData(dialogWithRestaurantData.restaurant.longitude.toString())
+                dialogEdit.listener = object : ListenerEditData {
+                    override fun onSubmitData(submitData: String) {
+                        this@MapFragmentHome.clickedRestaurant.longitude = submitData.toDouble()
+                        updateDBAndDismisDialog(dialogEdit)
+                    }
+                }
+            }
+
+            override fun onButtonAddress() {
+                val dialogEdit = modifyRestaurantData(dialogWithRestaurantData.restaurant.address)
+                dialogEdit.listener = object : ListenerEditData {
+                    override fun onSubmitData(submitData: String) {
+                        this@MapFragmentHome.clickedRestaurant.address = submitData
+                        updateDBAndDismisDialog(dialogEdit)
+                    }
+                }
+            }
+
+            override fun onButtonName() {
+                val dialogEdit = modifyRestaurantData(dialogWithRestaurantData.restaurant.name)
+                dialogEdit.listener = object : ListenerEditData {
+                    override fun onSubmitData(submitData: String) {
+                        this@MapFragmentHome.clickedRestaurant.name = submitData
+                        updateDBAndDismisDialog(dialogEdit)
+                    }
+                }
+            }
+
+            override fun onButtonPhoto() {
+                Timber.d(" photo")
+                if (dialogWithRestaurantData.restaurant.photoTaken) {
+                    dialogWithRestaurantData.bt_photo.visibility = View.GONE
+                } else {
+                    imageChooser()
+                }
+            }
         }
+
         return true
+    }
+
+    private fun modifyRestaurantData(type: String): DialogEditData {
+        val dialogEdit = DialogEditData(type)
+        dialogEdit.show(requireActivity().supportFragmentManager, dialogWithRestaurantData.tag)
+        return dialogEdit
+    }
+
+    private fun updateDBAndDismisDialog(dialogEdit: DialogEditData) {
+        viewModel.update(this@MapFragmentHome.clickedRestaurant)
+        dialogEdit.dismiss()
+        dialogWithRestaurantData.dismiss()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == Activity.RESULT_OK && requestCode == CAMERA_PIC_REQUEST) {
+            clickedRestaurant.photoTaken = true
+            viewModel.update(clickedRestaurant)
 
-            restaurant.photoTaken = true
-            viewModel.update(restaurant)
             val photo = bundleOf("photo" to imageFile.absolutePath)
-
             findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
-            dialogWithData.dismiss()
-           // (activity as MainActivity).fab.hide()
-
+            dialogWithRestaurantData.dismiss()
+            // (activity as MainActivity).fab.hide()
         }
     }
 
@@ -286,7 +274,7 @@ class MapFragmentHome :
     @Throws(IOException::class)
     fun createImageFile(): File {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName: String = restaurant.name.toUpperCase()  + "_" + timeStamp + "_"
+        val imageFileName: String = clickedRestaurant.name.toUpperCase() + "_" + timeStamp + "_"
         val storageDir: File? = activity?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         if (storageDir != null) {
             if (!storageDir.exists()) storageDir.mkdirs()
@@ -295,8 +283,6 @@ class MapFragmentHome :
     }
 
     private fun observeRestaurantLiveData(map: GoogleMap?) {
-
-        Timber.d(" obseerveRestaurantData 4 ")
         viewModel.restaurantsFormDBLiveData.observe(viewLifecycleOwner, { list ->
 
             if (list.isEmpty()) {
@@ -341,10 +327,7 @@ class MapFragmentHome :
         locationPermissionGranted = false
         when (requestCode) {
             PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION -> {
-
-                if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED
-                ) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionGranted = true
                 }
             }
@@ -464,18 +447,12 @@ class MapFragmentHome :
     }
 
 
-    private val callback = object : AddRestaurantDialog.ListenerClicked {
+    private val callback = object : AddNewRestaurantDialog.ListenerClicked {
         override fun onName(name: String) {
-
             val newMarker = map?.addMarker(
                 MarkerOptions()
                     .title(name)
-                    .position(
-                        LatLng(
-                            lastKnownLocation!!.latitude,
-                            lastKnownLocation!!.longitude
-                        )
-                    )
+                    .position(LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude))
             )
 
             newRestaurant = Restraurant(
@@ -485,22 +462,17 @@ class MapFragmentHome :
                 newMarker!!.title,
                 false
             )
-            Timber.d(name)
         }
 
         override fun onAddress(address: String) {
             newRestaurant.address = address
-            Timber.d(address)
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_add) {
-            addRestaurantDialog.show(
-                requireActivity().supportFragmentManager,
-                addRestaurantDialog.tag
-            )
+            addRestaurantDialog.show(requireActivity().supportFragmentManager, addRestaurantDialog.tag)
         }
         if (item.itemId == R.id.get_place) {
             showCurrentPlace()

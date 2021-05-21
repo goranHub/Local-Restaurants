@@ -1,11 +1,6 @@
 package com.sicoapp.localrestaurants.data.remote
 
-import android.util.Log
-import com.sicoapp.localrestaurants.domain.Restraurant
 import io.reactivex.Single
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import javax.inject.Inject
 
 /**

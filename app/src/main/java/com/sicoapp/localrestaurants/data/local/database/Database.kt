@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.data.local
+package com.sicoapp.localrestaurants.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

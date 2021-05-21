@@ -10,7 +10,7 @@ import android.view.WindowManager
 import android.widget.Button
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
-import com.sicoapp.localrestaurants.domain.Restraurant
+import com.sicoapp.localrestaurants.data.remote.Restraurant
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 
 class DialogWithData : DialogFragment() {
@@ -61,37 +61,36 @@ class DialogWithData : DialogFragment() {
 
     private fun setupClickListenersLatitude(view: View) {
         view.bt_latitude.setOnClickListener {
-            listener?.onButton("latitude")
+            listener?.onButtonLatitude()
         }
     }
 
     private fun setupClickListenersLongitude(view: View) {
         view.bt_longitude.setOnClickListener {
-            listener?.onButton("longitude")
+            listener?.onButtonLongitude()
         }
     }
 
     private fun setupClickListenersAddress(view: View) {
         view.bt_address.setOnClickListener {
-            listener?.onButton("address")
+            listener?.onButtonAddress()
         }
     }
 
     private fun setupClickListenersTitle(view: View) {
         view.bt_name.setOnClickListener {
-            listener?.onButton("name")
+            listener?.onButtonName()
         }
     }
 
     private fun setupClickListenersPhoto(view: View) {
         view.bt_photo.setOnClickListener {
-            listener?.onButton("photo")
+            listener?.onButtonPhoto()
         }
     }
 
     private fun setupClickListenersClose(view: View) {
         view.bt_close.setOnClickListener {
-            listener?.onButton("close")
             dialog?.dismiss()
             dismiss()
         }
@@ -99,7 +98,11 @@ class DialogWithData : DialogFragment() {
 
 
     interface ListenerClicked {
-        fun onButton(type: String)
+        fun onButtonLatitude()
+        fun onButtonLongitude()
+        fun onButtonAddress()
+        fun onButtonName()
+        fun onButtonPhoto()
     }
 
 

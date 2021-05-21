@@ -18,7 +18,7 @@ import kotlinx.android.synthetic.main.fragment_dialog_edit_data.view.*
 class DialogEditData(val name: String) : DialogFragment()  {
 
     private lateinit var tv : EditText
-    var listener : ListenerSubmitData? = null
+    var listener : ListenerEditData? = null
 
 
     override fun onCreateView(
@@ -56,6 +56,6 @@ class DialogEditData(val name: String) : DialogFragment()  {
     }
 }
 
-interface ListenerSubmitData {
+interface ListenerEditData {
     fun onSubmitData(submitData : String)
 }

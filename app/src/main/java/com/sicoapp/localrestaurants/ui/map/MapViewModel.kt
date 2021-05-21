@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.sicoapp.localrestaurants.domain.Repository
-import com.sicoapp.localrestaurants.domain.Restraurant
+import com.sicoapp.localrestaurants.data.remote.Restraurant
 import com.sicoapp.localrestaurants.utils.Resource
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers

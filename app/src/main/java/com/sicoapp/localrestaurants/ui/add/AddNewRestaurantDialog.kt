@@ -14,7 +14,7 @@ import com.sicoapp.localrestaurants.R
  * @author ll4
  * @date 5/15/2021
  */
-class AddRestaurantDialog : DialogFragment() {
+class AddNewRestaurantDialog : DialogFragment() {
 
     lateinit var listener : ListenerClicked
 

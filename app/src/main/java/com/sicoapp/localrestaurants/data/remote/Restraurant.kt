@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.domain
+package com.sicoapp.localrestaurants.data.remote
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName

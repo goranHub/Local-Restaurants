@@ -1,6 +1,6 @@
 package com.sicoapp.localrestaurants.di
 
-import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
+import com.sicoapp.localrestaurants.data.local.database.DatabaseDataSource
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
 import com.sicoapp.localrestaurants.domain.Repository
 import dagger.Module

@@ -1,8 +1,6 @@
 package com.sicoapp.localrestaurants.data.remote
 
-import com.sicoapp.localrestaurants.domain.Restraurant
 import io.reactivex.Single
-import retrofit2.Call
 import retrofit2.http.GET
 
 /**

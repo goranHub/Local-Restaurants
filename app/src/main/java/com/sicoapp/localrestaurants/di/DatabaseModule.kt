@@ -2,7 +2,7 @@ package com.sicoapp.localrestaurants.di
 
 import android.content.Context
 import androidx.room.Room
-import com.sicoapp.localrestaurants.data.local.Database
+import com.sicoapp.localrestaurants.data.local.database.Database
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

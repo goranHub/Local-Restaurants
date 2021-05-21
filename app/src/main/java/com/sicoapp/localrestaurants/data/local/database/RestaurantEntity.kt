@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.data.local
+package com.sicoapp.localrestaurants.data.local.database
 
 import android.os.Parcelable
 import androidx.annotation.Nullable

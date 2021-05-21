@@ -1,7 +1,8 @@
 package com.sicoapp.localrestaurants.domain
 
-import com.sicoapp.localrestaurants.data.local.DatabaseDataSource
+import com.sicoapp.localrestaurants.data.local.database.DatabaseDataSource
 import com.sicoapp.localrestaurants.data.remote.NetworkDataSource
+import com.sicoapp.localrestaurants.data.remote.Restraurant
 import com.sicoapp.localrestaurants.domain.mappers.DataMapper
 import com.sicoapp.localrestaurants.domain.mappers.mapToRestaurantEntity
 import com.sicoapp.localrestaurants.utils.toV3Observable

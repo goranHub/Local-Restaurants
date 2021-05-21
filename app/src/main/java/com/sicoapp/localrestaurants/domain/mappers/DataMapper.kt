@@ -1,7 +1,7 @@
 package com.sicoapp.localrestaurants.domain.mappers
 
-import com.sicoapp.localrestaurants.data.local.RestaurantEntity
-import com.sicoapp.localrestaurants.domain.Restraurant
+import com.sicoapp.localrestaurants.data.local.database.RestaurantEntity
+import com.sicoapp.localrestaurants.data.remote.Restraurant
 
 /**
  * @author ll4
@@ -22,7 +22,7 @@ object DataMapper {
 
 
 
-    fun mapToSingleRestaurantEntity(res : Restraurant): RestaurantEntity{
+    fun mapToSingleRestaurantEntity(res : Restraurant): RestaurantEntity {
       return  RestaurantEntity(
             address = res.address,
             latitude = res.latitude,
