@@ -1,23 +1,28 @@
 package com.sicoapp.localrestaurants.ui.map
 
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageView
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
+import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
 import com.sicoapp.localrestaurants.data.remote.Restraurant
+import com.sicoapp.localrestaurants.ui.all.BindSdStoragePhoto
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 import javax.inject.Inject
 
-class DialogWithData @Inject constructor(): DialogFragment() {
+class DialogWithData @Inject constructor() : DialogFragment() {
 
-    var listener : ListenerClicked? = null
-    var restaurant = Restraurant("",0.0,0.0,"",false)
+    var listener: ListenerClicked? = null
+    var restaurant = Restraurant("", 0.0, 0.0, "", false)
+    var bind: BindSdStoragePhoto? = null
+    var mapToBind : SdStoragePhoto? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,21 +30,29 @@ class DialogWithData @Inject constructor(): DialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val v = inflater.inflate(R.layout.fragment_diralog_with_data, container, false)
+        val view = inflater.inflate(R.layout.fragment_diralog_with_data, container, false)
 
-        val btTitle = v.findViewById<Button>(R.id.bt_name)
-        val btAddress = v.findViewById<Button>(R.id.bt_address)
-        val btLongitude = v.findViewById<Button>(R.id.bt_longitude)
-        val btLatitude = v.findViewById<Button>(R.id.bt_latitude)
-        val btPhoto = v.findViewById<Button>(R.id.bt_photo)
+        val btTitle = view.findViewById<Button>(R.id.bt_name)
+        val btAddress = view.findViewById<Button>(R.id.bt_address)
+        val btLongitude = view.findViewById<Button>(R.id.bt_longitude)
+        val btLatitude = view.findViewById<Button>(R.id.bt_latitude)
+        val ivRestaurant = view.findViewById<ImageView>(R.id.iv_restaurant)
 
         btTitle.text = restaurant.name
         btAddress.text = restaurant.address
         btLongitude.text = restaurant.longitude.toString()
         btLatitude.text = restaurant.latitude.toString()
 
-        return v
+        if(mapToBind != null){
+            val bmp = mapToBind!!.bmp
+            ivRestaurant.setImageBitmap(bmp)
+        }else{
+            ivRestaurant.setImageResource(R.drawable.iv_bottom_sheet_restaurant)
+        }
+
+        return view
     }
+
 
     override fun onStart() {
         super.onStart()
@@ -56,7 +69,7 @@ class DialogWithData @Inject constructor(): DialogFragment() {
         setupClickListenersAddress(view)
         setupClickListenersLongitude(view)
         setupClickListenersLatitude(view)
-        setupClickListenersPhoto(view)
+        setupClickListenersImageView(view)
     }
 
 
@@ -84,9 +97,9 @@ class DialogWithData @Inject constructor(): DialogFragment() {
         }
     }
 
-    private fun setupClickListenersPhoto(view: View) {
-        view.bt_photo.setOnClickListener {
-            listener?.onButtonPhoto()
+    private fun setupClickListenersImageView(view: View) {
+        view.iv_restaurant.setOnClickListener {
+            listener?.onImageView()
         }
     }
 
@@ -103,7 +116,7 @@ class DialogWithData @Inject constructor(): DialogFragment() {
         fun onButtonLongitude()
         fun onButtonAddress()
         fun onButtonName()
-        fun onButtonPhoto()
+        fun onImageView()
     }
 
 
