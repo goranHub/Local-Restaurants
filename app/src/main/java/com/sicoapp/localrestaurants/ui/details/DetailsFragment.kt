@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.sicoapp.localrestaurants.BaseActivity
+import com.sicoapp.localrestaurants.data.remote.Restraurant
 import com.sicoapp.localrestaurants.databinding.FragmentDetailsBinding
 import com.sicoapp.localrestaurants.ui.BaseFR
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint

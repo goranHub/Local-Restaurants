@@ -43,9 +43,28 @@ class DatabaseDataSource @Inject constructor(
             })
     }
 
+    fun addRestaurant(restaurantEntity: RestaurantEntity){
+        val observable = Observable.just(restaurantEntity)
+        observable.subscribeOn(Schedulers.io())
+            .subscribe(object : Observer<RestaurantEntity?> {
+                override fun onSubscribe(d: Disposable) {
+                }
 
-    fun updateRestaurants(restaurant: RestaurantEntity) {
-        val observable = Observable.just(restaurant)
+                override fun onNext(restaurant: RestaurantEntity) {
+                    databaseDao.addRestaurant(restaurant)
+                }
+
+                override fun onError(e: Throwable) {
+                }
+
+                override fun onComplete() {
+                }
+
+            })
+    }
+
+    fun updateRestaurants(restaurantEntity: RestaurantEntity) {
+        val observable = Observable.just(restaurantEntity)
         observable.subscribeOn(Schedulers.io())
             .subscribe(object : Observer<RestaurantEntity?> {
                 override fun onSubscribe(d: Disposable) {

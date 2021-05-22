@@ -47,4 +47,8 @@ class Repository
         databaseDataSource.updateRestaurants(DataMapper.mapToSingleRestaurantEntity(restaurant))
     }
 
+    fun add(restaurant: Restraurant) {
+        databaseDataSource.addRestaurant(DataMapper.mapToSingleRestaurantEntity(restaurant))
+    }
+
 }

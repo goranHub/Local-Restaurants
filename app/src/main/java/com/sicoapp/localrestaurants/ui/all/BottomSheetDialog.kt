@@ -14,14 +14,14 @@ class BottomSheetDialog @Inject constructor(
     private val adapter: BottomSheetAdapter,
 ) : BottomSheetDialogFragment() {
 
-    lateinit var photos: List<SdStoragePhoto>
+    lateinit var sdData: List<SdStoragePhoto>
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         dialog.apply {
             setContentView(R.layout.bottom_sheet)
             recyclerView.layoutManager = LinearLayoutManager(context)
             recyclerView.adapter = adapter
-            val mapToBind = photos
+            val mapToBind = sdData
                 .filter {
                     it.bmpIsNotNull()
                 }.map {

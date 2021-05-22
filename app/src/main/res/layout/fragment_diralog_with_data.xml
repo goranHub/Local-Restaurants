@@ -8,85 +8,132 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="200dp"
-        android:layout_height="360dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp">
+
 
         <Button
             android:id="@+id/bt_name"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="bt_name"
             android:textColor="@color/quantum_cyan400"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:text="bt_name" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/bt_address"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="bt_address"
             android:textColor="@color/quantum_cyan400"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bt_name"
-            android:text="bt_address" />
+            app:layout_constraintTop_toBottomOf="@+id/bt_name" />
 
         <Button
             android:id="@+id/bt_longitude"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="bt_longitude"
             android:textColor="@color/quantum_cyan400"
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bt_address"
-            android:text="bt_longitude" />
+            app:layout_constraintEnd_toStartOf="@+id/iv_restaurant"
+            app:layout_constraintTop_toBottomOf="@+id/tv_long" />
 
         <Button
             android:id="@+id/bt_latitude"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="bt_latitude"
             android:textColor="@color/quantum_cyan400"
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bt_longitude"
-            android:text="bt_latitude" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iv_restaurant"
+            app:layout_constraintTop_toBottomOf="@+id/tv_lang" />
 
-        <Button
-            android:id="@+id/bt_photo"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
+
+        <ImageView
+            android:id="@+id/iv_restaurant"
+            android:layout_width="200dp"
+            android:layout_height="120dp"
             android:layout_marginTop="8dp"
-            android:text="Take Photo"
-            android:textColor="@color/quantum_cyan400"
-            android:textSize="16sp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bt_latitude" />
+            app:layout_constraintTop_toBottomOf="@+id/bt_address"
+            tools:srcCompat="@tools:sample/avatars" />
 
         <Button
             android:id="@+id/bt_close"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="48dp"
             android:text="CLOSE"
             android:textColor="@color/quantum_cyan400"
             android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/tv_nameR"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bt_photo"
-            app:layout_constraintVertical_bias="0.468" />
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_nameR"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="Name"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/bt_name"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:text="Address"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/bt_address"
+            app:layout_constraintTop_toBottomOf="@+id/tv_nameR" />
+
+        <TextView
+            android:id="@+id/tv_long"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:text="Long"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/iv_restaurant"
+            app:layout_constraintTop_toBottomOf="@+id/bt_address" />
+
+        <TextView
+            android:id="@+id/tv_lang"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:text="Lang"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/iv_restaurant"
+            app:layout_constraintTop_toBottomOf="@+id/bt_longitude" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -57,5 +57,5 @@ class DialogEditData(val name: String) : DialogFragment()  {
 }
 
 interface ListenerEditData {
-    fun onSubmitData(submitData : String)
+    fun onSubmitData(data : String)
 }
