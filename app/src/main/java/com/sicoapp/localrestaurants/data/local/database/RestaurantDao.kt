@@ -11,7 +11,7 @@ import io.reactivex.Single
 interface RestaurantDao{
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addRestaurant(restaurant: RestaurantEntity) : Completable
+    fun addRestaurant(restaurant: RestaurantEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(vararg restaurant: RestaurantEntity)

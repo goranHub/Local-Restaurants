@@ -21,7 +21,7 @@ class DialogWithData @Inject constructor() : DialogFragment() {
     var listener: ListenerClicked? = null
     var restaurant = Restraurant("", 0.0, 0.0, "", false)
     var bind: BindSdStoragePhoto? = null
-    var mapToBind : SdStoragePhoto? = null
+    var mapToBind: SdStoragePhoto? = null
 
 
     override fun onCreateView(
@@ -43,10 +43,10 @@ class DialogWithData @Inject constructor() : DialogFragment() {
         btLongitude.text = restaurant.longitude.toString()
         btLatitude.text = restaurant.latitude.toString()
 
-        if(mapToBind != null){
+        if (mapToBind != null) {
             val bmp = mapToBind!!.bmp
             ivRestaurant.setImageBitmap(bmp)
-        }else{
+        } else {
             ivRestaurant.setImageResource(R.drawable.iv_bottom_sheet_restaurant)
         }
 
@@ -64,7 +64,6 @@ class DialogWithData @Inject constructor() : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupClickListenersClose(view)
         setupClickListenersTitle(view)
         setupClickListenersAddress(view)
         setupClickListenersLongitude(view)
@@ -103,14 +102,6 @@ class DialogWithData @Inject constructor() : DialogFragment() {
         }
     }
 
-    private fun setupClickListenersClose(view: View) {
-        view.bt_close.setOnClickListener {
-            dialog?.dismiss()
-            dismiss()
-        }
-    }
-
-
     interface ListenerClicked {
         fun onButtonLatitude()
         fun onButtonLongitude()
@@ -118,6 +109,7 @@ class DialogWithData @Inject constructor() : DialogFragment() {
         fun onButtonName()
         fun onImageView()
     }
-
-
 }
+
+
+

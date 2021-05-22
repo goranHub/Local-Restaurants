@@ -22,11 +22,9 @@ class BottomSheetDialog @Inject constructor(
             recyclerView.layoutManager = LinearLayoutManager(context)
             recyclerView.adapter = adapter
             val mapToBind = sdData
-                .filter {
-                    it.bmpIsNotNull()
-                }.map {
-                    BindSdStoragePhoto(it)
-                }
+                .filter {it.bmpIsNotNull()}
+                .distinctBy { it.name.subSequence(0, 6) }
+                .map {BindSdStoragePhoto(it)}
             adapter.addRestaurantToAdapter(mapToBind)
         }
     }

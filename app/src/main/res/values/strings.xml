@@ -23,5 +23,6 @@
     <string name="pick_place">Choose a place</string>
     <string name="address">address</string>
     <string name="cancel">cancel</string>
-    <string name="ok">ok</string>/>
+    <string name="ok">ok</string>
+    <string name="nameMin6"><![CDATA[name length >5]]></string>/>
 </resources>

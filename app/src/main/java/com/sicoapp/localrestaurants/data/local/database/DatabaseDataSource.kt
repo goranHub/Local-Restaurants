@@ -6,6 +6,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -84,7 +85,7 @@ class DatabaseDataSource @Inject constructor(
     }
 
 
-    fun deleteTask(restaurant: RestaurantEntity): Completable {
+    fun deleteRestaurant(restaurant: RestaurantEntity): Completable {
         val deleteEvent = DatabaseEvent(DatabaseEventType.REMOVED, restaurant)
         return databaseDao.deleteRestaurant(restaurant)
             .doOnComplete { mObserverSubject.onNext(deleteEvent) }

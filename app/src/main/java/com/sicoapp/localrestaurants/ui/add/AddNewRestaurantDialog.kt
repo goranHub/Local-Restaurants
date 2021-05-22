@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
 import javax.inject.Inject
@@ -17,10 +18,10 @@ import javax.inject.Inject
  */
 class AddNewRestaurantDialog @Inject constructor() : DialogFragment() {
 
-    lateinit var listener : ListenerClicked
+    lateinit var listener: ListenerClicked
 
 
-    @SuppressLint("InflateParams")
+    @SuppressLint("InflateParams", "ShowToast")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
 
@@ -31,10 +32,17 @@ class AddNewRestaurantDialog @Inject constructor() : DialogFragment() {
 
                 .setPositiveButton(R.string.ok)
                 { _, _ ->
-                    val name = dialog!!.findViewById<View>(R.id.name) as EditText
-                    val address = dialog!!.findViewById<View>(R.id.address) as EditText
-                    listener.onName(name = name.text.toString())
-                    listener.onAddress(address = address.text.toString())
+                    val editTextName = dialog!!.findViewById<View>(R.id.name) as EditText
+                    val editTextAddress = dialog!!.findViewById<View>(R.id.address) as EditText
+
+                    val name = editTextName.text.toString()
+                    val address = editTextAddress.text.toString()
+
+                    if (name.length > 5) {
+                        listener.onNewRestaurant(name = name, address = address)
+                    } else {
+                        Toast.makeText(dialog!!.context, "To short", Toast.LENGTH_LONG)
+                    }
                 }
                 .setNegativeButton(R.string.cancel)
                 { _, _ ->
@@ -46,7 +54,6 @@ class AddNewRestaurantDialog @Inject constructor() : DialogFragment() {
     }
 
     interface ListenerClicked {
-        fun onName(name: String)
-        fun onAddress(address: String)
+        fun onNewRestaurant(name: String, address: String)
     }
 }
