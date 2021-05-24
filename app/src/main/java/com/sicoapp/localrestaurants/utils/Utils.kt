@@ -48,7 +48,7 @@ object StorageSdData {
     fun savePhotoToInternalStorage(context: Context, filename: String, bmp: Bitmap): Boolean {
 
         val filePath = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)?.absolutePath
-        val fileName = filename.replace("\\s".toRegex(), "")
+        val fileName = filename.replace("^/^-^_".toRegex(), "")
         val tmpFile = CreateImgFile.createTmpFile(context, fileName).absolutePath
 
         return try {
@@ -62,6 +62,21 @@ object StorageSdData {
             false
         }
     }
+
+    fun isSaved(likelyPlacePhotoName: String, sdData: List<SdStoragePhoto>): Boolean {
+        var isSaved = false
+        val photoName =
+            likelyPlacePhotoName.replace("^/^-^_".toRegex(), "").toUpperCase().subSequence(0, 4)
+                .toString()
+
+       val sdDataFilter = sdData.filter {
+            val savedName = it.name.subSequence(0, 4).toString()
+            savedName == photoName
+        }
+
+        return sdDataFilter.isNotEmpty()
+    }
+
 }
 
 
@@ -75,7 +90,8 @@ object CreateImgFile {
         if (storageDir != null) {
             if (!storageDir.exists()) storageDir.mkdirs()
         }
-        return File.createTempFile(imageFileName, ".jpg", storageDir)
+        val name = imageFileName.replace("^/^-^_".toRegex(), "")
+        return File.createTempFile(name, ".jpg", storageDir)
     }
 }
 

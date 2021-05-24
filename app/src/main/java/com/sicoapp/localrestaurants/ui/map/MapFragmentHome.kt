@@ -117,7 +117,10 @@ class MapFragmentHome @Inject constructor(
             )
         }
 
-        loadPhotosFromSdStorageIntoBottomSheetDialog()
+
+        lifecycleScope.launch {
+            sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
+        }
 
         addRestaurantDialog.listener = callback
 
@@ -160,6 +163,7 @@ class MapFragmentHome @Inject constructor(
 
     private fun fabClick() {
         (activity as MainActivity).fab.setOnClickListener {
+            bottomSheetDialog.sdData = sdData
             bottomSheetDialog.show(requireActivity().supportFragmentManager, "test")
         }
     }
@@ -170,11 +174,14 @@ class MapFragmentHome @Inject constructor(
 
         dialogWithRestaurantData.restaurant = clickedRestaurant
 
-        val mapToBind = sdData.firstOrNull {
-            it.name.subSequence(0, 5) == marker.title.subSequence(0, 5).toString().toUpperCase()
+        val mapToBindDialog = sdData.firstOrNull {
+            //check sdData name with marker name
+            val sdDataName = it.name.subSequence(0, 4)
+            val markerName = marker.title.subSequence(0, 4).toString().replace("^/^-^_".toRegex(), "").toUpperCase()
+            sdDataName == markerName
         }
 
-        dialogWithRestaurantData.mapToBind = mapToBind
+        dialogWithRestaurantData.mapToBind = mapToBindDialog
 
         dialogWithRestaurantData.show(
             requireActivity().supportFragmentManager,
@@ -383,7 +390,7 @@ class MapFragmentHome @Inject constructor(
 
 
     @SuppressLint("MissingPermission")
-    private fun showCurrentPlace() {
+    private fun getDataForCurrentPlace() {
         if (map == null) {
             return
         }
@@ -443,9 +450,6 @@ class MapFragmentHome @Inject constructor(
             )
             getLocationPermission()
         }
-
-
-
     }
 
 
@@ -483,12 +487,12 @@ class MapFragmentHome @Inject constructor(
             )
         }
         if (item.itemId == R.id.get_place) {
-            showCurrentPlace()
+            getDataForCurrentPlace()
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun openPlacesDialog() {
+   private fun openPlacesDialog() {
 
         val listener = DialogInterface.OnClickListener { _, which ->
 
@@ -498,51 +502,58 @@ class MapFragmentHome @Inject constructor(
                     .position(likelyPlaceLatLngs[which]!!)
             )
 
-            /*
-                here take from getPlace dialog
-                to make marker
-             */
-            newRestaurant = Restraurant(
-                likelyPlaceAddresses[which].toString(),
-                newMarker!!.position.latitude,
-                newMarker.position.longitude,
-                newMarker.title,
-                false
-            )
+            if(likelyPlacePhoto[which] != null){
+                val photoMetadata = likelyPlacePhoto[which]?.get(0)
+                val photoRequest = FetchPhotoRequest.builder(photoMetadata!!)
+                    .setMaxWidth(500) // Optional.
+                    .setMaxHeight(300) // Optional.
+                    .build()
 
-            listRestaurant.add(newRestaurant)
-            repository.add(newRestaurant)
+                placesClient.fetchPhoto(photoRequest)
+                    .addOnSuccessListener { fetchPhotoResponse: FetchPhotoResponse ->
 
+                        val bitmap = fetchPhotoResponse.bitmap
 
-            //val tmpFile = CreateImgFile.createTmpFile(requireContext(), likelyPlaceNames[which]!!)
+                        if(!(StorageSdData.isSaved(likelyPlaceNames[which]!!, sdData))){
+                            StorageSdData.savePhotoToInternalStorage(requireContext(), likelyPlaceNames[which]!!, bitmap )
 
-            val photoMetadata = likelyPlacePhoto[which]?.get(0)
-            val photoRequest = FetchPhotoRequest.builder(photoMetadata!!)
-                .setMaxWidth(500) // Optional.
-                .setMaxHeight(300) // Optional.
-                .build()
-            placesClient.fetchPhoto(photoRequest)
-                .addOnSuccessListener { fetchPhotoResponse: FetchPhotoResponse ->
+                            newRestaurant = Restraurant(
+                                likelyPlaceAddresses[which].toString(),
+                                newMarker!!.position.latitude,
+                                newMarker.position.longitude,
+                                newMarker.title,
+                                true
+                            )
 
-                    val bitmap = fetchPhotoResponse.bitmap
-                    StorageSdData.savePhotoToInternalStorage(requireContext(), likelyPlaceNames[which]!!, bitmap )
+                            //upload sdData variable for markerClick and bottomSheet
+                            lifecycleScope.launch {
+                                sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
+                            }
 
-                    lifecycleScope.launch {
-                        sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
-                        bottomSheetDialog.sdData = sdData
+                            listRestaurant.add(newRestaurant)
+                            repository.add(newRestaurant)
+                        }
+
+                    }.addOnFailureListener { exception: Exception ->
+                        if (exception is ApiException) {
+                            Timber.e("Place not found: %s", exception.message)
+                            //val statusCode = exception.statusCode
+                            Timber.d("Handle error with given status code.")
+                        }
                     }
+            }else{
+                newRestaurant = Restraurant(
+                    likelyPlaceAddresses[which].toString(),
+                    newMarker!!.position.latitude,
+                    newMarker.position.longitude,
+                    newMarker.title,
+                    false
+                )
 
-
-                }.addOnFailureListener { exception: Exception ->
-                    if (exception is ApiException) {
-                        Timber.e("Place not found: %s", exception.message)
-                        //val statusCode = exception.statusCode
-                        Timber.d("Handle error with given status code.")
-                    }
-                }
+                listRestaurant.add(newRestaurant)
+                repository.add(newRestaurant)
+            }
         }
-
-
 
             AlertDialog.Builder(requireContext())
                 .setTitle(R.string.pick_place)
@@ -550,13 +561,6 @@ class MapFragmentHome @Inject constructor(
                 .show()
 
     }
-
-        private fun loadPhotosFromSdStorageIntoBottomSheetDialog() {
-            lifecycleScope.launch {
-                sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
-                bottomSheetDialog.sdData = sdData
-            }
-        }
 
         override fun onResume() {
             mMapView.onResume()
