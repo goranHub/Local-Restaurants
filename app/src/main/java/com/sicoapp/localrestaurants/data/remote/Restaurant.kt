@@ -9,7 +9,7 @@ import kotlinx.android.parcel.Parcelize
  * @date 5/7/2021
  */
 @Parcelize
-data class Restraurant(
+data class Restaurant(
     @SerializedName("Address")
     var address: String,
     @SerializedName("Latitude")

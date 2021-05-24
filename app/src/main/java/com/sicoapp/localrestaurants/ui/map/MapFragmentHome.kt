@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -43,7 +44,7 @@ import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
-import com.sicoapp.localrestaurants.data.remote.Restraurant
+import com.sicoapp.localrestaurants.data.remote.Restaurant
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.domain.Repository
 import com.sicoapp.localrestaurants.ui.BaseFR
@@ -64,7 +65,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MapFragmentHome @Inject constructor(
-    val dialogWithRestaurantData: DialogWithData,
+    val restaurantDialog: RestaurantDialog,
     private val addRestaurantDialog: AddNewRestaurantDialog,
     private val bottomSheetDialog: BottomSheetDialog,
     val repository: Repository,
@@ -73,15 +74,17 @@ class MapFragmentHome @Inject constructor(
     BaseFR<FragmentMapHomeBinding, BaseActivity>(),
     OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
+
+    private val layoutBinding get() = binding!!
     override var binding: FragmentMapHomeBinding? = null
     private lateinit var mMapView: MapView
-    private lateinit var clickedRestaurant: Restraurant
+    private lateinit var clickedRestaurant: Restaurant
     private lateinit var sdData: List<SdStoragePhoto>
-    private var newRestaurant = Restraurant("", 0.0, 0.0, "", false)
+    private var newRestaurant = Restaurant("", 0.0, 0.0, "", false)
     private var map: GoogleMap? = null
     private lateinit var imageFile: File
     private lateinit var placesClient: PlacesClient
-    private var listRestaurant = mutableListOf<Restraurant>()
+    private var listRestaurant = mutableListOf<Restaurant>()
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val defaultLocation = LatLng(45.84107, 16.05076)
     private var locationPermissionGranted = false
@@ -110,13 +113,20 @@ class MapFragmentHome @Inject constructor(
         savedInstanceState: Bundle?
     ): View {
 
-        activity?.let {
-            Places.initialize(
-                it.applicationContext,
-                getString(R.string.google_maps_api_key)
-            )
-        }
+        map?.uiSettings?.isZoomControlsEnabled = true
+        map?.uiSettings?.isMyLocationButtonEnabled = true
 
+        checkHasInternetConnection()
+
+        Places.initialize(
+            requireActivity().applicationContext,
+            getString(R.string.google_maps_api_key)
+        )
+
+        placesClient = Places.createClient(requireContext())
+
+        fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(requireActivity())
 
         lifecycleScope.launch {
             sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
@@ -124,30 +134,22 @@ class MapFragmentHome @Inject constructor(
 
         addRestaurantDialog.listener = callback
 
-        placesClient = Places.createClient(requireContext())
-
-        fusedLocationProviderClient =
-            LocationServices.getFusedLocationProviderClient(requireActivity())
-
         fabClick()
 
         binding = setBinding(inflater, container)
-        mMapView = binding!!.map
+        mMapView = layoutBinding.map
         mMapView.onCreate(savedInstanceState)
         mMapView.getMapAsync(this)
 
-        return binding!!.root
+        return layoutBinding.root
     }
 
 
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
 
-        observeRestaurantLiveData(map)
-
         map?.uiSettings?.isZoomControlsEnabled = true
         map?.uiSettings?.isMyLocationButtonEnabled = true
-
 
         map?.setOnMarkerClickListener(this)
         map?.animateCamera(
@@ -158,6 +160,7 @@ class MapFragmentHome @Inject constructor(
         getLocationPermission()
         updateLocationUI()
         getDeviceLocation()
+        observeRestaurantLiveData(map)
 
     }
 
@@ -172,63 +175,63 @@ class MapFragmentHome @Inject constructor(
 
         clickedRestaurant = listRestaurant.first { it.name == marker.title }
 
-        dialogWithRestaurantData.restaurant = clickedRestaurant
+        restaurantDialog.restaurant = clickedRestaurant
 
-        val mapToBindDialog = sdData.firstOrNull {
+        val bindPhotoToRestaurantDialog = sdData.firstOrNull {
             //check sdData name with marker name
             val sdDataName = it.name.subSequence(0, 4)
-            val markerName = marker.title.subSequence(0, 4).toString().replace("^/^-^_".toRegex(), "").toUpperCase()
+            val markerName =
+                marker.title.subSequence(0, 4).toString().replace("^/^-^_".toRegex(), "")
+                    .toUpperCase()
             sdDataName == markerName
         }
 
-        dialogWithRestaurantData.mapToBind = mapToBindDialog
+        restaurantDialog.mapToBind = bindPhotoToRestaurantDialog
 
-        dialogWithRestaurantData.show(
+        restaurantDialog.show(
             requireActivity().supportFragmentManager,
-            dialogWithRestaurantData.tag
+            restaurantDialog.tag
         )
 
-        dialogWithRestaurantData.listener = object : DialogWithData.ListenerClicked {
+        restaurantDialog.listener = object : RestaurantDialog.ListenerClicked {
 
             override fun onButtonLatitude() {
-                val dialogEdit =
-                    modifyRestaurantDataByType(dialogWithRestaurantData.restaurant.latitude.toString())
+                val dialogEdit = modifyData(restaurantDialog.restaurant.latitude.toString())
                 dialogEdit.listener = object : ListenerEditData {
                     override fun onSubmitData(latitude: String) {
-                        this@MapFragmentHome.clickedRestaurant.latitude = latitude.toDouble()
+                        clickedRestaurant.latitude = latitude.toDouble()
                         updateDBAndDismissDialog(dialogEdit)
                     }
                 }
             }
 
             override fun onButtonLongitude() {
-                val dialogEdit =
-                    modifyRestaurantDataByType(dialogWithRestaurantData.restaurant.longitude.toString())
+                val dialogEdit = modifyData(restaurantDialog.restaurant.longitude.toString())
                 dialogEdit.listener = object : ListenerEditData {
                     override fun onSubmitData(longitude: String) {
-                        this@MapFragmentHome.clickedRestaurant.longitude = longitude.toDouble()
+                        clickedRestaurant.longitude = longitude.toDouble()
                         updateDBAndDismissDialog(dialogEdit)
                     }
                 }
             }
 
             override fun onButtonAddress() {
-                val dialogEdit =
-                    modifyRestaurantDataByType(dialogWithRestaurantData.restaurant.address)
+                val dialogEdit = modifyData(restaurantDialog.restaurant.address)
                 dialogEdit.listener = object : ListenerEditData {
                     override fun onSubmitData(address: String) {
-                        this@MapFragmentHome.clickedRestaurant.address = address
+                        clickedRestaurant.address = address
                         updateDBAndDismissDialog(dialogEdit)
                     }
                 }
             }
 
             override fun onButtonName() {
-                val dialogEdit =
-                    modifyRestaurantDataByType(dialogWithRestaurantData.restaurant.name)
+                val dialogEdit = modifyData(restaurantDialog.restaurant.name)
+
                 dialogEdit.listener = object : ListenerEditData {
-                    override fun onSubmitData(name: String) {
-                        this@MapFragmentHome.clickedRestaurant.name = name
+                    override fun onSubmitData(submitName: String) {
+                        listRestaurant.filter { it.name == restaurantDialog.restaurant.name }
+                            .forEach { it.name = restaurantDialog.restaurant.name }
                         updateDBAndDismissDialog(dialogEdit)
                     }
                 }
@@ -241,16 +244,16 @@ class MapFragmentHome @Inject constructor(
         return true
     }
 
-    private fun modifyRestaurantDataByType(type: String): DialogEditData {
+    private fun modifyData(type: String): DialogEditData {
         val dialogEdit = DialogEditData(type)
-        dialogEdit.show(requireActivity().supportFragmentManager, dialogWithRestaurantData.tag)
+        dialogEdit.show(requireActivity().supportFragmentManager, restaurantDialog.tag)
         return dialogEdit
     }
 
     private fun updateDBAndDismissDialog(dialogEdit: DialogEditData) {
         repository.update(this@MapFragmentHome.clickedRestaurant)
         dialogEdit.dismiss()
-        dialogWithRestaurantData.dismiss()
+        restaurantDialog.dismiss()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -262,8 +265,8 @@ class MapFragmentHome @Inject constructor(
 
             val photo = bundleOf("photo" to imageFile.absolutePath)
             findNavController().navigate(R.id.action_nav_map_to_restaurantPhotoFragment, photo)
-            dialogWithRestaurantData.dismiss()
-            // (activity as MainActivity).fab.hide()
+            restaurantDialog.dismiss()
+            (activity as MainActivity).fab.hide()
         }
     }
 
@@ -284,24 +287,38 @@ class MapFragmentHome @Inject constructor(
     }
 
     private fun observeRestaurantLiveData(map: GoogleMap?) {
-        viewModel?.restaurantsFormDBLiveData?.observe(viewLifecycleOwner, { list ->
+        viewModel?.restaurantData?.observe(viewLifecycleOwner, { resource ->
 
-            if (list.isEmpty()) {
-                viewModel?.getRestaurantsFromNetAndSaveIntoDB()
-            } else {
-                listRestaurant = list as MutableList<Restraurant>
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    listRestaurant = resource.data as MutableList<Restaurant>
 
-                list.map {
-                    map?.addMarker(
-                        MarkerOptions().position(
-                            LatLng(it.latitude, it.longitude)
-                        ).title(it.name)
-                    )
+                    listRestaurant.map {
+                        map?.addMarker(
+                            MarkerOptions().position(
+                                LatLng(it.latitude, it.longitude)
+                            ).title(it.name)
+                        )
+                    }
+                }
+                Status.ERROR -> {
+                    showLoading()
+                }
+                Status.LOADING -> {
+                    hideLoading()
                 }
             }
         })
     }
 
+
+    private fun showLoading() {
+        layoutBinding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        layoutBinding.progressBar.visibility = View.GONE
+    }
 
     private fun getLocationPermission() {
         if (activity?.let {
@@ -344,8 +361,6 @@ class MapFragmentHome @Inject constructor(
                 map?.isMyLocationEnabled = true
                 map?.uiSettings?.isMyLocationButtonEnabled = true
             } else {
-                map?.isMyLocationEnabled = false
-                map?.uiSettings?.isMyLocationButtonEnabled = false
                 lastKnownLocation = null
                 getLocationPermission()
             }
@@ -461,7 +476,7 @@ class MapFragmentHome @Inject constructor(
                     .position(LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude))
             )
 
-            newRestaurant = Restraurant(
+            newRestaurant = Restaurant(
                 address,
                 lastKnownLocation!!.latitude,
                 lastKnownLocation!!.longitude,
@@ -492,17 +507,17 @@ class MapFragmentHome @Inject constructor(
         return super.onOptionsItemSelected(item)
     }
 
-   private fun openPlacesDialog() {
+    private fun openPlacesDialog() {
 
         val listener = DialogInterface.OnClickListener { _, which ->
 
             val newMarker = map?.addMarker(
                 MarkerOptions()
-                    .title(likelyPlaceNames[which])
+                    .title(likelyPlaceNames[which]?.replace("^/^-^_".toRegex(), "")?.toUpperCase())
                     .position(likelyPlaceLatLngs[which]!!)
             )
 
-            if(likelyPlacePhoto[which] != null){
+            if (likelyPlacePhoto[which] != null) {
                 val photoMetadata = likelyPlacePhoto[which]?.get(0)
                 val photoRequest = FetchPhotoRequest.builder(photoMetadata!!)
                     .setMaxWidth(500) // Optional.
@@ -514,10 +529,14 @@ class MapFragmentHome @Inject constructor(
 
                         val bitmap = fetchPhotoResponse.bitmap
 
-                        if(!(StorageSdData.isSaved(likelyPlaceNames[which]!!, sdData))){
-                            StorageSdData.savePhotoToInternalStorage(requireContext(), likelyPlaceNames[which]!!, bitmap )
+                        if (!(StorageSdData.isSaved(likelyPlaceNames[which]!!, sdData))) {
+                            StorageSdData.savePhotoToInternalStorage(
+                                requireContext(),
+                                likelyPlaceNames[which]!!,
+                                bitmap
+                            )
 
-                            newRestaurant = Restraurant(
+                            newRestaurant = Restaurant(
                                 likelyPlaceAddresses[which].toString(),
                                 newMarker!!.position.latitude,
                                 newMarker.position.longitude,
@@ -541,8 +560,8 @@ class MapFragmentHome @Inject constructor(
                             Timber.d("Handle error with given status code.")
                         }
                     }
-            }else{
-                newRestaurant = Restraurant(
+            } else {
+                newRestaurant = Restaurant(
                     likelyPlaceAddresses[which].toString(),
                     newMarker!!.position.latitude,
                     newMarker.position.longitude,
@@ -555,41 +574,49 @@ class MapFragmentHome @Inject constructor(
             }
         }
 
-            AlertDialog.Builder(requireContext())
-                .setTitle(R.string.pick_place)
-                .setItems(likelyPlaceNames, listener)
-                .show()
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.pick_place)
+            .setItems(likelyPlaceNames, listener)
+            .show()
 
     }
 
-        override fun onResume() {
-            mMapView.onResume()
-            super.onResume()
-        }
-
-        override fun onPause() {
-            mMapView.onPause()
-            super.onPause()
-        }
-
-        override fun onDestroy() {
-            mMapView.onDestroy()
-            super.onDestroy()
-        }
-
-        override fun onDestroyView() {
-            super.onDestroyView()
-            binding = null
-        }
-
-        override fun onLowMemory() {
-            mMapView.onLowMemory()
-            super.onLowMemory()
-        }
-
-        override fun setBinding(
-            inflater: LayoutInflater,
-            container: ViewGroup?
-        ): FragmentMapHomeBinding =
-            FragmentMapHomeBinding.inflate(inflater, container, false)
+    private fun checkHasInternetConnection(): Boolean {
+        val mainActivity = activity as MainActivity
+        mainActivity.checkInternetConnection()
+        return hasInternetConnection(mainActivity)
     }
+
+    override fun onResume() {
+        showLoading()
+        (activity as MainActivity).fab.show()
+        mMapView.onResume()
+        super.onResume()
+    }
+
+    override fun onPause() {
+        mMapView.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        mMapView.onDestroy()
+        super.onDestroy()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    override fun onLowMemory() {
+        mMapView.onLowMemory()
+        super.onLowMemory()
+    }
+
+    override fun setBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): FragmentMapHomeBinding =
+        FragmentMapHomeBinding.inflate(inflater, container, false)
+}

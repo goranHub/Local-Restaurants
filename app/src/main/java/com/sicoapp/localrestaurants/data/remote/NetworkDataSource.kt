@@ -11,7 +11,7 @@ class NetworkDataSource @Inject constructor(
     private val restaurantServis: RestaurantServis
 ) {
 
-    fun fetchRestaurants():  Single<List<Restraurant>>  {
+    fun fetchRestaurants():  Single<List<Restaurant>>  {
         return restaurantServis.getAll()
     }
 }

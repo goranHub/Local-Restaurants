@@ -17,4 +17,4 @@ const val DEFAULT_ZOOM = 15
 const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
 const val KEY_CAMERA_POSITION = "camera_position"
 const val KEY_LOCATION = "location"
-const val M_MAX_ENTRIES = 5
+const val M_MAX_ENTRIES = 10

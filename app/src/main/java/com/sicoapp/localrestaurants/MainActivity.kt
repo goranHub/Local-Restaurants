@@ -2,6 +2,7 @@ package com.sicoapp.localrestaurants
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -15,7 +16,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.sicoapp.localrestaurants.databinding.ActivityMainBinding
 import com.sicoapp.localrestaurants.utils.MapFragmentFactory
+import com.sicoapp.localrestaurants.utils.hasInternetConnection
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -64,6 +67,24 @@ class MainActivity : BaseActivity(){
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
+
+
+    fun checkInternetConnection() {
+        if (hasInternetConnection(this)) {
+            connectionBackground.visibility = View.GONE
+            connectionText.visibility = View.GONE
+        } else {
+            connectionBackground.visibility = View.VISIBLE
+            connectionText.visibility = View.VISIBLE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkInternetConnection()
+    }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)

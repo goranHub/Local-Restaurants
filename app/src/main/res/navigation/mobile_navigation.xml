@@ -37,6 +37,6 @@
     </fragment>
     <fragment
         android:id="@+id/dialogWithData"
-        android:name="com.sicoapp.localrestaurants.ui.map.DialogWithData"
+        android:name="com.sicoapp.localrestaurants.ui.map.RestaurantDialog"
         android:label="DialogWithData" />
 </navigation>

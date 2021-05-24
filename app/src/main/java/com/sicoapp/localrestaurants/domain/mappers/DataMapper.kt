@@ -1,7 +1,7 @@
 package com.sicoapp.localrestaurants.domain.mappers
 
 import com.sicoapp.localrestaurants.data.local.database.RestaurantEntity
-import com.sicoapp.localrestaurants.data.remote.Restraurant
+import com.sicoapp.localrestaurants.data.remote.Restaurant
 
 /**
  * @author ll4
@@ -9,9 +9,9 @@ import com.sicoapp.localrestaurants.data.remote.Restraurant
  */
 object DataMapper {
 
-    fun mapEntitiesToDomain(input: List<RestaurantEntity>): List<Restraurant> =
+    fun mapEntitiesToDomain(input: List<RestaurantEntity>): List<Restaurant> =
         input.map {
-            Restraurant(
+            Restaurant(
                 address = it.address,
                 latitude = it.latitude,
                 longitude = it.longitude,
@@ -22,7 +22,7 @@ object DataMapper {
 
 
 
-    fun mapToSingleRestaurantEntity(res : Restraurant): RestaurantEntity {
+    fun mapRestaurantToRestaurantEntity(res : Restaurant): RestaurantEntity {
       return  RestaurantEntity(
             address = res.address,
             latitude = res.latitude,
@@ -34,7 +34,7 @@ object DataMapper {
 
 }
 
-fun List<Restraurant>.mapToRestaurantEntity(): List<RestaurantEntity> {
+fun List<Restaurant>.mapToRestaurantEntity(): List<RestaurantEntity> {
 
     var formattedRestaurantList = mutableListOf<RestaurantEntity>()
     val restaurantResponseList = this ?: return formattedRestaurantList

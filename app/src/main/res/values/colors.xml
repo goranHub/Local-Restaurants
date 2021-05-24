@@ -11,5 +11,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="snackbar_error_color">#F73240</color>
+    <color name="blue_night">#285679</color>
 
 </resources>

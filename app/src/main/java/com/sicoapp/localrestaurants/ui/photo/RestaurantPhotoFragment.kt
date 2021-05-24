@@ -10,8 +10,10 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.sicoapp.localrestaurants.MainActivity
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.databinding.FragmentRestaurantPhotoBinding
+import kotlinx.android.synthetic.main.app_bar_main.*
 
 
 /**
@@ -49,7 +51,8 @@ class RestaurantPhotoFragment : Fragment() {
 
         binding.btnUpdate.setOnClickListener {
             val bundle = bundleOf("back" to "1")
-            findNavController().navigate(R.id.action_restaurantPhotoFragment_to_nav_map, bundle)
+            findNavController().popBackStack()
+            (activity as MainActivity).fab.show()
         }
 
     }
