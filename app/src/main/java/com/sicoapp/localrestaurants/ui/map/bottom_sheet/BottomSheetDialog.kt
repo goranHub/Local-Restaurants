@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.ui.all
+package com.sicoapp.localrestaurants.ui.map.bottom_sheet
 
 import android.app.Dialog
 import androidx.recyclerview.widget.LinearLayoutManager

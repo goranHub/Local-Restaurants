@@ -13,13 +13,13 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -48,8 +48,10 @@ import com.sicoapp.localrestaurants.data.remote.Restaurant
 import com.sicoapp.localrestaurants.databinding.FragmentMapHomeBinding
 import com.sicoapp.localrestaurants.domain.Repository
 import com.sicoapp.localrestaurants.ui.BaseFR
-import com.sicoapp.localrestaurants.ui.add.AddNewRestaurantDialog
-import com.sicoapp.localrestaurants.ui.all.BottomSheetDialog
+import com.sicoapp.localrestaurants.ui.map.add.AddNewRestaurantDialog
+import com.sicoapp.localrestaurants.ui.map.bottom_sheet.BottomSheetDialog
+import com.sicoapp.localrestaurants.ui.map.place.LoadDataForCurrentPlace
+import com.sicoapp.localrestaurants.ui.map.place.OpenPlaceDialog
 import com.sicoapp.localrestaurants.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -89,11 +91,6 @@ class MapFragmentHome @Inject constructor(
     private val defaultLocation = LatLng(45.84107, 16.05076)
     private var locationPermissionGranted = false
     private var lastKnownLocation: Location? = null
-    private var likelyPlaceNames: Array<String?> = arrayOfNulls(0)
-    private var likelyPlaceAddresses: Array<String?> = arrayOfNulls(0)
-    private var likelyPlaceAttributions: Array<List<*>?> = arrayOfNulls(0)
-    private var likelyPlaceLatLngs: Array<LatLng?> = arrayOfNulls(0)
-    private var likelyPlacePhoto: Array<MutableList<PhotoMetadata>?> = arrayOfNulls(0)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,13 +111,12 @@ class MapFragmentHome @Inject constructor(
     ): View {
 
         map?.uiSettings?.isZoomControlsEnabled = true
-        map?.uiSettings?.isMyLocationButtonEnabled = true
 
         checkHasInternetConnection()
 
         Places.initialize(
             requireActivity().applicationContext,
-            getString(R.string.google_maps_api_key)
+            getString(R.string.maps_api_key)
         )
 
         placesClient = Places.createClient(requireContext())
@@ -147,9 +143,13 @@ class MapFragmentHome @Inject constructor(
 
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
-
         map?.uiSettings?.isZoomControlsEnabled = true
-        map?.uiSettings?.isMyLocationButtonEnabled = true
+
+        val locationButton =
+            (mMapView.findViewById<View>("1".toInt()).parent as View).findViewById<View>("2".toInt())
+        (locationButton as ImageView).visibility = View.VISIBLE
+
+        locationButton.setOnClickListener { getDeviceLocation() }
 
         map?.setOnMarkerClickListener(this)
         map?.animateCamera(
@@ -158,7 +158,6 @@ class MapFragmentHome @Inject constructor(
         )
 
         getLocationPermission()
-        updateLocationUI()
         getDeviceLocation()
         observeRestaurantLiveData(map)
 
@@ -311,22 +310,12 @@ class MapFragmentHome @Inject constructor(
         })
     }
 
-
-    private fun showLoading() {
-        layoutBinding.progressBar.visibility = View.VISIBLE
-    }
-
-    private fun hideLoading() {
-        layoutBinding.progressBar.visibility = View.GONE
-    }
-
     private fun getLocationPermission() {
-        if (activity?.let {
-                ContextCompat.checkSelfPermission(
-                    it.applicationContext,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            } == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                requireActivity().applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             locationPermissionGranted = true
         } else {
             ActivityCompat.requestPermissions(
@@ -349,26 +338,7 @@ class MapFragmentHome @Inject constructor(
                 }
             }
         }
-        updateLocationUI()
     }
-
-    private fun updateLocationUI() {
-        if (map == null) {
-            return
-        }
-        try {
-            if (locationPermissionGranted) {
-                map?.isMyLocationEnabled = true
-                map?.uiSettings?.isMyLocationButtonEnabled = true
-            } else {
-                lastKnownLocation = null
-                getLocationPermission()
-            }
-        } catch (e: SecurityException) {
-            Timber.e("SecurityException")
-        }
-    }
-
 
     private fun getDeviceLocation() {
         try {
@@ -379,7 +349,7 @@ class MapFragmentHome @Inject constructor(
                         // Set the map's camera position to the current location of the device.
                         lastKnownLocation = task.result
                         if (lastKnownLocation != null) {
-                            map?.moveCamera(
+                            map?.animateCamera(
                                 CameraUpdateFactory.newLatLngZoom(
                                     LatLng(
                                         lastKnownLocation!!.latitude,
@@ -390,7 +360,7 @@ class MapFragmentHome @Inject constructor(
                         }
                     } else {
                         Timber.d("Current location is null")
-                        map?.moveCamera(
+                        map?.animateCamera(
                             CameraUpdateFactory
                                 .newLatLngZoom(defaultLocation, DEFAULT_ZOOM.toFloat())
                         )
@@ -404,70 +374,6 @@ class MapFragmentHome @Inject constructor(
     }
 
 
-    @SuppressLint("MissingPermission")
-    private fun getDataForCurrentPlace() {
-        if (map == null) {
-            return
-        }
-        if (locationPermissionGranted) {
-
-            val placeFields = listOf(
-                Place.Field.NAME,
-                Place.Field.ADDRESS,
-                Place.Field.LAT_LNG,
-                Place.Field.PHOTO_METADATAS
-            )
-
-            val request = FindCurrentPlaceRequest.newInstance(placeFields)
-
-            val placeResult = placesClient.findCurrentPlace(request)
-            placeResult.addOnCompleteListener { task ->
-                if (task.isSuccessful && task.result != null) {
-
-                    val likelyPlaces = task.result
-                    val count =
-                        if (likelyPlaces != null && likelyPlaces.placeLikelihoods.size < M_MAX_ENTRIES) {
-                            likelyPlaces.placeLikelihoods.size
-                        } else {
-                            M_MAX_ENTRIES
-                        }
-
-                    var i = 0
-                    likelyPlaceNames = arrayOfNulls(count)
-                    likelyPlaceAddresses = arrayOfNulls(count)
-                    likelyPlaceAttributions = arrayOfNulls<List<*>?>(count)
-                    likelyPlaceLatLngs = arrayOfNulls(count)
-                    likelyPlacePhoto = arrayOfNulls(count)
-                    for (placeLikelihood in likelyPlaces?.placeLikelihoods ?: emptyList()) {
-                        // Build a provideMutableListOfRestaurants of likely places to show the user.
-                        likelyPlaceNames[i] = placeLikelihood.place.name
-                        likelyPlaceAddresses[i] = placeLikelihood.place.address
-                        likelyPlaceAttributions[i] = placeLikelihood.place.attributions
-                        likelyPlaceLatLngs[i] = placeLikelihood.place.latLng
-                        likelyPlacePhoto[i] = placeLikelihood.place.photoMetadatas
-                        i++
-                        if (i > count - 1) {
-                            break
-                        }
-                    }
-                    openPlacesDialog()
-                } else {
-                    Timber.e("task exception")
-                }
-            }
-        } else {
-            Timber.d("Not grant location permission.")
-            map?.addMarker(
-                MarkerOptions()
-                    .title(getString(R.string.default_info_title))
-                    .position(defaultLocation)
-                    .snippet(getString(R.string.default_info_snippet))
-            )
-            getLocationPermission()
-        }
-    }
-
-
     private val callback = object : AddNewRestaurantDialog.ListenerClicked {
         override fun onNewRestaurant(name: String, address: String) {
             val newMarker = map?.addMarker(
@@ -475,7 +381,6 @@ class MapFragmentHome @Inject constructor(
                     .title(name)
                     .position(LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude))
             )
-
             newRestaurant = Restaurant(
                 address,
                 lastKnownLocation!!.latitude,
@@ -483,14 +388,10 @@ class MapFragmentHome @Inject constructor(
                 newMarker!!.title,
                 false
             )
-
-            /*
-                add new restaurant by AddNewRestaurantDialog
-             */
+            //add new restaurant by AddNewRestaurantDialog
             listRestaurant.add(newRestaurant)
             repository.add(newRestaurant)
         }
-
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -502,89 +403,33 @@ class MapFragmentHome @Inject constructor(
             )
         }
         if (item.itemId == R.id.get_place) {
-            getDataForCurrentPlace()
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun openPlacesDialog() {
-
-        val listener = DialogInterface.OnClickListener { _, which ->
-
-            val newMarker = map?.addMarker(
-                MarkerOptions()
-                    .title(likelyPlaceNames[which]?.replace("^/^-^_".toRegex(), "")?.toUpperCase())
-                    .position(likelyPlaceLatLngs[which]!!)
-            )
-
-            if (likelyPlacePhoto[which] != null) {
-                val photoMetadata = likelyPlacePhoto[which]?.get(0)
-                val photoRequest = FetchPhotoRequest.builder(photoMetadata!!)
-                    .setMaxWidth(500) // Optional.
-                    .setMaxHeight(300) // Optional.
-                    .build()
-
-                placesClient.fetchPhoto(photoRequest)
-                    .addOnSuccessListener { fetchPhotoResponse: FetchPhotoResponse ->
-
-                        val bitmap = fetchPhotoResponse.bitmap
-
-                        if (!(StorageSdData.isSaved(likelyPlaceNames[which]!!, sdData))) {
-                            StorageSdData.savePhotoToInternalStorage(
-                                requireContext(),
-                                likelyPlaceNames[which]!!,
-                                bitmap
-                            )
-
-                            newRestaurant = Restaurant(
-                                likelyPlaceAddresses[which].toString(),
-                                newMarker!!.position.latitude,
-                                newMarker.position.longitude,
-                                newMarker.title,
-                                true
-                            )
-
-                            //upload sdData variable for markerClick and bottomSheet
-                            lifecycleScope.launch {
-                                sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
-                            }
-
-                            listRestaurant.add(newRestaurant)
-                            repository.add(newRestaurant)
-                        }
-
-                    }.addOnFailureListener { exception: Exception ->
-                        if (exception is ApiException) {
-                            Timber.e("Place not found: %s", exception.message)
-                            //val statusCode = exception.statusCode
-                            Timber.d("Handle error with given status code.")
-                        }
-                    }
-            } else {
-                newRestaurant = Restaurant(
-                    likelyPlaceAddresses[which].toString(),
-                    newMarker!!.position.latitude,
-                    newMarker.position.longitude,
-                    newMarker.title,
-                    false
+            if (locationPermissionGranted) {
+                LoadDataForCurrentPlace.getDataForCurrentPlace(
+                    map, placesClient,
+                    requireContext(), sdData, listRestaurant
                 )
 
-                listRestaurant.add(newRestaurant)
-                repository.add(newRestaurant)
+                //upload sdData variable for markerClick and bottomSheet
+                lifecycleScope.launch {
+                    sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
+                }
             }
         }
-
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.pick_place)
-            .setItems(likelyPlaceNames, listener)
-            .show()
-
+        return super.onOptionsItemSelected(item)
     }
 
     private fun checkHasInternetConnection(): Boolean {
         val mainActivity = activity as MainActivity
         mainActivity.checkInternetConnection()
         return hasInternetConnection(mainActivity)
+    }
+
+    private fun showLoading() {
+        layoutBinding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        layoutBinding.progressBar.visibility = View.GONE
     }
 
     override fun onResume() {

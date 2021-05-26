@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'com.google.secrets_gradle_plugin' version '0.5'
 }
 
 apply plugin: "androidx.navigation.safeargs.kotlin"
@@ -10,6 +11,9 @@ apply plugin: 'kotlin-android'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-android-extensions'
 
+// Load credentials.
+def properties = new Properties()
+file("../local.properties").withInputStream { properties.load(it) }
 
 android {
     compileSdkVersion 30
@@ -24,6 +28,13 @@ android {
         android.defaultConfig.vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+
+
+        // Share the key with your `AndroidManifest.xml`
+        manifestPlaceholders = [ googleMapsApiKey:"${properties.getProperty('google.maps_api_key')}"]
+        //set in string
+        resValue "string", "maps_api_key", properties.getProperty("google.maps_api_key", "")
+
     }
 
     buildTypes {

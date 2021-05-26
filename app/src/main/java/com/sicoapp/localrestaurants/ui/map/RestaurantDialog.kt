@@ -12,7 +12,7 @@ import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
 import com.sicoapp.localrestaurants.data.remote.Restaurant
-import com.sicoapp.localrestaurants.ui.all.BindSdStoragePhoto
+import com.sicoapp.localrestaurants.ui.map.bottom_sheet.BindSdStoragePhoto
 import kotlinx.android.synthetic.main.fragment_diralog_with_data.view.*
 import javax.inject.Inject
 

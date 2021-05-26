@@ -1,4 +1,4 @@
-package com.sicoapp.localrestaurants.ui.add
+package com.sicoapp.localrestaurants.ui.map.add
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog

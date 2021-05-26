@@ -6,7 +6,7 @@
     <data>
         <variable
             name="data"
-            type="com.sicoapp.localrestaurants.ui.all.BindSdStoragePhoto" />
+            type="com.sicoapp.localrestaurants.ui.map.bottom_sheet.BindSdStoragePhoto" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
