@@ -2,6 +2,7 @@ package com.sicoapp.localrestaurants.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.sicoapp.localrestaurants.BaseHiltActivity
 import com.sicoapp.localrestaurants.utils.KEY_NAME
 import com.sicoapp.localrestaurants.utils.KEY_RATING
@@ -35,5 +36,12 @@ object AppModule {
     @Singleton
     @Provides
     fun provideWeight(sharedPref: SharedPreferences) = sharedPref.getInt(KEY_RATING, 1)
+
+    @Singleton
+    @Provides
+    fun provideFusedLocationProviderClient(
+        @ApplicationContext app: Context
+    ) = FusedLocationProviderClient(app)
+
 
 }

@@ -15,10 +15,8 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
 import com.sicoapp.localrestaurants.data.remote.Restaurant
-import com.sicoapp.localrestaurants.domain.Repository
 import com.sicoapp.localrestaurants.utils.DEFAULT_ZOOM
 import com.sicoapp.localrestaurants.utils.StorageSdData
-import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -26,10 +24,10 @@ import javax.inject.Inject
  * @author lllhr
  * @date 5/26/2021
  */
-object OpenPlaceDialog {
+class OpenPlaceDialog @Inject constructor() {
 
-    lateinit var  listener : DialogInterface.OnClickListener
-    private var newRestaurant = Restaurant("", 0.0, 0.0, "", false)
+    lateinit var listener: DialogInterface.OnClickListener
+    lateinit var newRestaurant: Restaurant
 
     fun openPlacesDialog(
         map: GoogleMap?, ctx: Context,
@@ -39,7 +37,7 @@ object OpenPlaceDialog {
         likelyPlacePhoto: Array<MutableList<PhotoMetadata>?>,
         placesClient: PlacesClient,
         sdData: List<SdStoragePhoto>,
-        listRestaurant : MutableList<Restaurant>
+        listRestaurant: MutableList<Restaurant>
     ) {
 
         listener = DialogInterface.OnClickListener { _, which ->
@@ -70,7 +68,7 @@ object OpenPlaceDialog {
                     .addOnSuccessListener { fetchPhotoResponse: FetchPhotoResponse ->
 
                         val bitmap = fetchPhotoResponse.bitmap
-
+                        //check if not saved
                         if (!(StorageSdData.isSaved(likelyPlaceNames[which]!!, sdData))) {
                             StorageSdData.savePhotoToInternalStorage(
                                 ctx,
@@ -86,13 +84,16 @@ object OpenPlaceDialog {
                                 true
                             )
 
-                        /*    //upload sdData variable for markerClick and bottomSheet
-                            lifecycleScope.launch {
-                                sdData = StorageSdData.loadPhotosFromSdStorage(ctx)
-                            }*/
-
                             listRestaurant.add(newRestaurant)
-
+                        } else {
+                            newRestaurant = Restaurant(
+                                likelyPlaceAddresses[which].toString(),
+                                newMarker!!.position.latitude,
+                                newMarker.position.longitude,
+                                newMarker.title,
+                                true
+                            )
+                            listRestaurant.add(newRestaurant)
                         }
 
                     }.addOnFailureListener { exception: Exception ->
@@ -102,6 +103,8 @@ object OpenPlaceDialog {
                             Timber.d("Handle error with given status code.")
                         }
                     }
+
+
             } else {
                 newRestaurant = Restaurant(
                     likelyPlaceAddresses[which].toString(),
@@ -112,14 +115,12 @@ object OpenPlaceDialog {
                 )
 
                 listRestaurant.add(newRestaurant)
-
             }
         }
-
         AlertDialog.Builder(ctx)
             .setTitle(R.string.pick_place)
             .setItems(likelyPlaceNames, listener)
             .show()
-
     }
+
 }

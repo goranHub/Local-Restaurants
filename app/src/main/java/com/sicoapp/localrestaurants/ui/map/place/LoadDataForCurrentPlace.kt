@@ -4,22 +4,26 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.model.PhotoMetadata
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
-import com.sicoapp.localrestaurants.R
 import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
 import com.sicoapp.localrestaurants.data.remote.Restaurant
 import com.sicoapp.localrestaurants.utils.M_MAX_ENTRIES
+import com.sicoapp.localrestaurants.utils.StorageSdData
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * @author lllhr
  * @date 5/26/2021
  */
-object LoadDataForCurrentPlace {
+class LoadDataForCurrentPlace @Inject constructor() {
+
+    @Inject
+    lateinit var openPlaceDialog: OpenPlaceDialog
 
     private var likelyPlaceNames: Array<String?> = arrayOfNulls(0)
     private var likelyPlaceAddresses: Array<String?> = arrayOfNulls(0)
@@ -28,12 +32,11 @@ object LoadDataForCurrentPlace {
     private var likelyPlacePhoto: Array<MutableList<PhotoMetadata>?> = arrayOfNulls(0)
 
 
-
     @SuppressLint("MissingPermission")
     fun getDataForCurrentPlace(
         map: GoogleMap?, placesClient: PlacesClient,
         ctx: Context, sdData: List<SdStoragePhoto>,
-        listRestaurant: MutableList<Restaurant>
+        listRestaurant: MutableList<Restaurant>,
     ) {
 
         val placeFields = listOf(
@@ -76,7 +79,8 @@ object LoadDataForCurrentPlace {
                     }
                 }
 
-                OpenPlaceDialog.openPlacesDialog(
+
+                openPlaceDialog.openPlacesDialog(
                     map, ctx, likelyPlaceNames, likelyPlaceAddresses,
                     likelyPlaceLatLngs, likelyPlacePhoto, placesClient,
                     sdData, listRestaurant

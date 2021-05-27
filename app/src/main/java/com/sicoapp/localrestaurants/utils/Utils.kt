@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
-import androidx.appcompat.app.AppCompatActivity
 import com.sicoapp.localrestaurants.data.local.storage.SdStoragePhoto
 import hu.akarnokd.rxjava3.bridge.RxJavaBridge
 import io.reactivex.Observable

@@ -11,7 +11,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 
 class DetailsViewModel @ViewModelInject constructor(
     @ApplicationContext application: Context,
-    private val restaurantServis: RestaurantServis
 ) : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {

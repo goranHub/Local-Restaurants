@@ -10,12 +10,13 @@ import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.sicoapp.localrestaurants.R
 import kotlinx.android.synthetic.main.fragment_dialog_edit_data.view.*
+import javax.inject.Inject
 
 /**
  * @author ll4
  * @date 2/6/2021
  */
-class DialogEditData(val name: String) : DialogFragment()  {
+class DialogEditData @Inject constructor(var name: String) : DialogFragment()  {
 
     private lateinit var tv : EditText
     var listener : ListenerEditData? = null

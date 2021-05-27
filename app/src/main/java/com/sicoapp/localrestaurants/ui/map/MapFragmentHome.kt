@@ -1,9 +1,7 @@
 package com.sicoapp.localrestaurants.ui.map
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -15,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -23,7 +20,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -34,11 +30,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.PhotoMetadata
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FetchPhotoRequest
-import com.google.android.libraries.places.api.net.FetchPhotoResponse
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.sicoapp.localrestaurants.BaseActivity
 import com.sicoapp.localrestaurants.MainActivity
@@ -68,9 +59,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MapFragmentHome @Inject constructor(
     val restaurantDialog: RestaurantDialog,
+    val dialogEdit: DialogEditData,
     private val addRestaurantDialog: AddNewRestaurantDialog,
     private val bottomSheetDialog: BottomSheetDialog,
     val repository: Repository,
+    val loadDataForCurrentPlace: LoadDataForCurrentPlace,
+    val openPlaceDialog: OpenPlaceDialog,
+    val fusedLocationProviderClient: FusedLocationProviderClient,
     var viewModel: MapViewModel? = null
 ) :
     BaseFR<FragmentMapHomeBinding, BaseActivity>(),
@@ -87,7 +82,7 @@ class MapFragmentHome @Inject constructor(
     private lateinit var imageFile: File
     private lateinit var placesClient: PlacesClient
     private var listRestaurant = mutableListOf<Restaurant>()
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
     private val defaultLocation = LatLng(45.84107, 16.05076)
     private var locationPermissionGranted = false
     private var lastKnownLocation: Location? = null
@@ -111,6 +106,7 @@ class MapFragmentHome @Inject constructor(
     ): View {
 
         map?.uiSettings?.isZoomControlsEnabled = true
+        map?.uiSettings?.isMyLocationButtonEnabled = true
 
         checkHasInternetConnection()
 
@@ -121,8 +117,6 @@ class MapFragmentHome @Inject constructor(
 
         placesClient = Places.createClient(requireContext())
 
-        fusedLocationProviderClient =
-            LocationServices.getFusedLocationProviderClient(requireActivity())
 
         lifecycleScope.launch {
             sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
@@ -144,6 +138,7 @@ class MapFragmentHome @Inject constructor(
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
         map?.uiSettings?.isZoomControlsEnabled = true
+        map?.uiSettings?.isMyLocationButtonEnabled = true
 
         val locationButton =
             (mMapView.findViewById<View>("1".toInt()).parent as View).findViewById<View>("2".toInt())
@@ -170,7 +165,29 @@ class MapFragmentHome @Inject constructor(
         }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.action_add) {
+            addRestaurantDialog.show(
+                requireActivity().supportFragmentManager,
+                addRestaurantDialog.tag
+            )
+        }
+        if (item.itemId == R.id.get_place) {
+            loadDataForCurrentPlace.getDataForCurrentPlace(
+                map, placesClient,
+                requireContext(), sdData, listRestaurant
+            )
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun onMarkerClick(marker: Marker): Boolean {
+
+        //upload sdData variable for markerClick and bottomSheet
+        lifecycleScope.launch {
+            sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
+        }
 
         clickedRestaurant = listRestaurant.first { it.name == marker.title }
 
@@ -244,7 +261,7 @@ class MapFragmentHome @Inject constructor(
     }
 
     private fun modifyData(type: String): DialogEditData {
-        val dialogEdit = DialogEditData(type)
+        dialogEdit.name = type
         dialogEdit.show(requireActivity().supportFragmentManager, restaurantDialog.tag)
         return dialogEdit
     }
@@ -269,7 +286,6 @@ class MapFragmentHome @Inject constructor(
         }
     }
 
-    @SuppressLint("QueryPermissionsNeeded")
     private fun imageChooserCamera() {
         try {
             imageFile = CreateImgFile.createTmpFile(requireContext(), clickedRestaurant.name)
@@ -342,7 +358,6 @@ class MapFragmentHome @Inject constructor(
 
     private fun getDeviceLocation() {
         try {
-            if (locationPermissionGranted) {
                 val locationResult = fusedLocationProviderClient.lastLocation
                 locationResult.addOnCompleteListener(requireActivity()) { task ->
                     if (task.isSuccessful) {
@@ -358,15 +373,7 @@ class MapFragmentHome @Inject constructor(
                                 )
                             )
                         }
-                    } else {
-                        Timber.d("Current location is null")
-                        map?.animateCamera(
-                            CameraUpdateFactory
-                                .newLatLngZoom(defaultLocation, DEFAULT_ZOOM.toFloat())
-                        )
-                        map?.uiSettings?.isMyLocationButtonEnabled = false
                     }
-                }
             }
         } catch (e: SecurityException) {
             Timber.e("Exception: %s", e.message)
@@ -392,30 +399,6 @@ class MapFragmentHome @Inject constructor(
             listRestaurant.add(newRestaurant)
             repository.add(newRestaurant)
         }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        if (id == R.id.action_add) {
-            addRestaurantDialog.show(
-                requireActivity().supportFragmentManager,
-                addRestaurantDialog.tag
-            )
-        }
-        if (item.itemId == R.id.get_place) {
-            if (locationPermissionGranted) {
-                LoadDataForCurrentPlace.getDataForCurrentPlace(
-                    map, placesClient,
-                    requireContext(), sdData, listRestaurant
-                )
-
-                //upload sdData variable for markerClick and bottomSheet
-                lifecycleScope.launch {
-                    sdData = StorageSdData.loadPhotosFromSdStorage(requireContext())
-                }
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun checkHasInternetConnection(): Boolean {

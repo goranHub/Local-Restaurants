@@ -39,7 +39,7 @@ class AddNewRestaurantDialog @Inject constructor() : DialogFragment() {
                     val address = editTextAddress.text.toString()
 
                     if (name.length > 5) {
-                        listener.onNewRestaurant(name = name, address = address)
+                        listener.onNewRestaurant(name, address)
                     } else {
                         Toast.makeText(dialog!!.context, "To short", Toast.LENGTH_LONG)
                     }
